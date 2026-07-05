@@ -2,6 +2,11 @@
 
 Django-based real estate platform with multi-agency support, Arabic/English bilingual, role-based dashboards, REST API, and advanced property management.
 
+**Live URLs:**
+- Custom Domain: https://rentplay.net
+- App Platform: https://rentplay-lrtcf.ondigitalocean.app/
+- GitHub: https://github.com/kerolestharwat83-cyber/RENTPLAY
+
 ---
 
 ## What's New in v2.0
@@ -10,10 +15,11 @@ Django-based real estate platform with multi-agency support, Arabic/English bili
 - Fixed Property.save() forcing is_published=True (now users control publishing)
 - Fixed Booking duration calculation robustness
 - Migrated unique_together to UniqueConstraint (modern Django syntax)
-- Removed hardcoded AWS credentials (now uses environment variables)
+- Removed hardcoded credentials (now uses environment variables)
 - Fixed admin path checking in middleware and context processors
 - Fixed middleware role checking for superuser access
-- Fixed 0002_banner.py migration date
+- Fixed MEDIA_URL double-definition bug
+- Added PostgreSQL SSL support
 
 ### New Features
 - **REST API** - Full API with filtering, searching, and pagination
@@ -32,136 +38,106 @@ Django-based real estate platform with multi-agency support, Arabic/English bili
 - **Skeleton Loading** - Animated placeholders while content loads
 
 ### Security Improvements
-- AWS credentials now use environment variables
+- All credentials moved to environment variables
 - Conditional S3/Local storage fallback
-- Added django-cors-headers for API security
+- SSL redirect support for production
+- Secure cookie settings
 - Enhanced logging with rotation
-- Added file upload size limits
-
-### UI/UX Improvements
-- Chat/Messaging styles added
-- Notification styles added
-- Wishlist button styles added
-- Status badge styles added
-- Rating & review styles added
-- Gallery controls improved
-- Sort bar styles added
-- Print styles added
-- Mobile overlay handler
-- Form validation enhancements
-- Lazy loading for images
-- Video upload preview
 
 ---
 
-## System Requirements
+## Quick Start (Local Development)
 
-- Python 3.10, 3.11, or 3.12
-- pip (Python package manager)
-- 500 MB free disk space
+```bash
+# 1. Extract the ZIP
+cd rentplay_v2.0/project
 
----
-
-## Step-by-Step Setup (Windows)
-
-### Step 1: Extract the ZIP file
-
-Extract `rentplay_v2.0.zip` to any folder, e.g.:
-```
-C:\Users\hp\Downloads\rentplay_v2.0\
-```
-
-### Step 2: Create Virtual Environment
-
-Open **Command Prompt (cmd)** or **PowerShell** and run:
-
-```cmd
-cd C:\Users\hp\Downloads\rentplay_v2.0
+# 2. Create virtual environment
 python -m venv venv
-```
 
-### Step 3: Activate Virtual Environment
-
-```cmd
+# 3. Activate (Windows)
 venv\Scripts\activate
-```
 
-You will see `(venv)` at the start of your command prompt.
-
-### Step 4: Install Dependencies
-
-```cmd
+# 4. Install dependencies
 pip install -r requirements.txt
-```
 
-### Step 5: Create Database Tables
-
-```cmd
+# 5. Create database
 python manage.py makemigrations
 python manage.py migrate
-```
 
-### Step 6: Create Admin User
-
-```cmd
+# 6. Create superuser
 python manage.py createsuperuser
-```
 
-Enter the following when prompted:
-- Username: `admin`
-- Email: `admin@rentplay.sa`
-- Password: `admin123`
-
-### Step 7: Load Demo Data (Optional)
-
-```cmd
+# 7. Load demo data (optional)
 python manage.py init_demo_data
-```
 
-### Step 8: Collect Static Files
-
-```cmd
+# 8. Collect static
 python manage.py collectstatic --noinput
-```
 
-### Step 9: Run the Server
-
-```cmd
+# 9. Run server
 python manage.py runserver
 ```
 
-Open your browser to: **http://127.0.0.1:8000/**
+Or simply double-click `run.bat` on Windows!
 
 ---
 
-## Environment Variables (Production)
+## Environment Variables
 
-Create a `.env` file in the project root:
+All sensitive configuration is read from environment variables. **Never hardcode credentials in your code.**
 
-```env
-DJANGO_SECRET_KEY=your-secret-key-here
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
-CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-DATABASE_URL=postgres://user:password@localhost:5432/rentplay
+Create a `.env` file locally or set variables in your hosting platform.
 
-# DigitalOcean Spaces (optional - falls back to local storage if not set)
-DO_SPACES_KEY=your-spaces-key
-DO_SPACES_SECRET=your-spaces-secret
-DO_SPACES_BUCKET=your-bucket-name
-DO_SPACES_ENDPOINT=https://your-region.digitaloceanspaces.com
+### Required Variables
 
-# Google Maps
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+| Variable | Description |
+|----------|-------------|
+| `DJANGO_SECRET_KEY` | Long random string (50+ chars). Generate: `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
+| `DEBUG` | `True` for development, `False` for production |
+| `ALLOWED_HOSTS` | Comma-separated domains |
+| `CSRF_TRUSTED_ORIGINS` | Comma-separated HTTPS origins |
+| `DATABASE_URL` | Database connection string |
+| `ADMIN_URL` | Random string to hide admin panel URL |
+
+### Optional Variables (for DigitalOcean Spaces file storage)
+
+| Variable | Description |
+|----------|-------------|
+| `DO_SPACES_KEY` | Spaces Access Key |
+| `DO_SPACES_SECRET` | Spaces Secret Key |
+| `DO_SPACES_BUCKET` | Spaces bucket name |
+| `DO_SPACES_ENDPOINT` | Spaces endpoint URL |
+
+### Optional Security Variables
+
+| Variable | Description |
+|----------|-------------|
+| `SECURE_SSL_REDIRECT` | `True` to force HTTPS |
+| `SESSION_COOKIE_SECURE` | `True` for HTTPS-only session cookies |
+| `CSRF_COOKIE_SECURE` | `True` for HTTPS-only CSRF cookies |
+
+See `.env.example` file for a template.
+
+---
+
+## Build & Run Commands (DigitalOcean App Platform)
+
+### Build Command:
+```bash
+pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
 ```
 
----
+### Run Command:
+```bash
+gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 60 config.wsgi:application
+```
 
-## Default Login Credentials
-
-| Role | Username | Password |
-|------|----------|----------|
-| Super Admin | admin | admin123 |
+### First-Time Setup (Console):
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py init_demo_data
+```
 
 ---
 
@@ -177,6 +153,17 @@ GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 | /api/types/ | GET | List property types |
 | /api/cities/ | GET | List cities |
 | /api/bookings/ | POST | Create a booking |
+| /sitemap.xml | GET | Dynamic sitemap for SEO |
+
+---
+
+## Admin Panel
+
+The admin panel is hidden at a custom URL for security:
+```
+https://rentplay.net/YOUR_ADMIN_URL/
+```
+Replace `YOUR_ADMIN_URL` with the value you set in the `ADMIN_URL` environment variable.
 
 ---
 
@@ -194,42 +181,17 @@ The language is saved in your browser session.
 ```
 rentplay_v2.0/
 ├── config/              # Django settings and config
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
-├── rentplay/            # Main application
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── api_views.py     # REST API views
-│   ├── apps.py
-│   ├── context_processors.py
-│   ├── forms.py
-│   ├── middleware.py
-│   ├── models.py
-│   ├── serializers.py   # DRF serializers
-│   ├── signals.py
-│   ├── urls.py
-│   ├── views.py
-│   └── migrations/
-│       ├── __init__.py
-│       ├── 0001_initial.py
-│       └── 0002_banner.py
-├── templates/           # HTML templates
-│   ├── base/
-│   ├── agency/
-│   ├── dashboard/
-│   ├── properties/
-│   └── registration/
-├── static/              # CSS, JS, images
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── manage.py
-├── requirements.txt
-├── init_demo_data.py
-└── README.md
+├── rentplay/            # Main application + API + Serializers
+├── templates/           # HTML templates (25+ templates)
+├── static/              # CSS + JS + Images
+├── manage.py            # Django manager
+├── requirements.txt     # Dependencies
+├── init_demo_data.py    # Demo data
+├── run.bat              # One-click Windows runner
+├── Dockerfile           # Docker container
+├── .env.example         # Environment variables template
+├── README.md            # This file
+└── GUIDE.md             # Detailed deployment guide
 ```
 
 ---

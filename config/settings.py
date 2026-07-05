@@ -1,8 +1,8 @@
 """
 Django settings for RENTPLAY v2.0
 Multi-Vendor Real Estate Marketplace
+Production-ready for DigitalOcean App Platform + Spaces
 Arabic-first (RTL) with English support
-Production settings for DigitalOcean + Spaces
 """
 
 from pathlib import Path
@@ -14,10 +14,32 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ==================== SECURITY ====================
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-rentplay-change-in-production-7a8b9c0d1e2f')
-DEBUG = False
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://localhost').split(',')
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-rentplay-change-in-production-7a8b9c0d1e2f3g4h5i6j7k8l9m0n'
+)
+
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1,rentplay-lrtcf.ondigitalocean.app'
+).split(',')
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://rentplay-lrtcf.ondigitalocean.app'
+).split(',')
+
+# Admin panel hidden URL
+ADMIN_URL = os.environ.get('ADMIN_URL', 'a7x9k2m1')
+
+# ==================== SSL / HTTPS (Production) ====================
+# DigitalOcean App Platform handles HTTPS - enable these for extra security
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
 
 # ==================== APPLICATION DEFINITION ====================
 INSTALLED_APPS = [
@@ -31,8 +53,8 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'rest_framework',
     'rest_framework.authtoken',
-    'django_filters',  # API filtering
-    'storages',  # django-storages for DigitalOcean Spaces
+    'django_filters',
+    'storages',
     'rentplay.apps.RentplayConfig',
 ]
 
@@ -51,9 +73,6 @@ MIDDLEWARE = [
     'rentplay.middleware.SEOMiddleware',
     'rentplay.middleware.RequestTimingMiddleware',
 ]
-
-# Admin panel hidden URL
-ADMIN_URL = os.environ.get('ADMIN_URL', 'a7x9k2m1')
 
 ROOT_URLCONF = 'config.urls'
 
@@ -79,13 +98,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# ==================== DATABASE ====================
+# ==================== DATABASE (PostgreSQL + SSL) ====================
 import dj_database_url
+
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3')
+
+# For PostgreSQL, ensure SSL mode is set
+if database_url.startswith('postgres') and 'sslmode=' not in database_url:
+    database_url += '&sslmode=require' if '?' in database_url else '?sslmode=require'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'),
-        conn_max_age=600
+        default=database_url,
+        conn_max_age=600,
+        ssl_require=False if 'sqlite' in database_url else True
     )
 }
 
@@ -104,7 +130,6 @@ LANGUAGE_CODE = 'ar'
 TIME_ZONE = 'Asia/Riyadh'
 USE_I18N = True
 USE_TZ = True
-USE_L10N = True
 
 LANGUAGES = [
     ('ar', _('Arabic')),
@@ -114,7 +139,6 @@ LANGUAGES = [
 LOCALE_PATHS = [BASE_DIR / 'locale']
 
 # ==================== DIGITALOCEAN SPACES ====================
-# Set these via environment variables - NEVER hardcode credentials
 AWS_ACCESS_KEY_ID = os.environ.get('DO_SPACES_KEY', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('DO_SPACES_SECRET', '')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('DO_SPACES_BUCKET', '')
@@ -126,14 +150,17 @@ AWS_DEFAULT_ACL = 'public-read'
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False
 
-# Only use S3 storage if credentials are configured
-if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/media/'
-else:
-    # Fallback to local storage
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    MEDIA_URL = 'media/'
+# ==================== STORAGES (Django 5.1+) ====================
+_use_s3 = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME and AWS_S3_ENDPOINT_URL)
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage' if _use_s3 else 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # ==================== STATIC & MEDIA ====================
 STATIC_URL = 'static/'
@@ -141,17 +168,12 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_ROOT = BASE_DIR / 'media'
-# MEDIA_URL is set above based on storage backend
+MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/media/' if _use_s3 else 'media/'
 
-# Django 5.1+ STORAGES dict - conditional default backend
-STORAGES = {
-    'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage' if not (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) else 'storages.backends.s3boto3.S3Boto3Storage',
-    },
-    'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
-    },
-}
+# ==================== WHITENOISE ====================
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = DEBUG
+WHITENOISE_MANIFEST_STRICT = False
 
 # ==================== DEFAULTS ====================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -162,7 +184,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # ==================== SESSION ====================
-SESSION_COOKIE_AGE = 86400 * 7
+SESSION_COOKIE_AGE = 86400 * 7  # 7 days
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # ==================== SECURITY HEADERS ====================
@@ -171,8 +193,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
 # ==================== EMAIL ====================
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@rentplay.sa'
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@rentplay.net')
 
 # ==================== PAGINATION ====================
 PROPERTIES_PER_PAGE = 15
@@ -236,6 +258,10 @@ LOGGING = {
     'loggers': {
         'rentplay': {
             'handlers': ['file', 'console'],
+            'level': 'INFO',
+        },
+        'django': {
+            'handlers': ['console'],
             'level': 'INFO',
         },
     },
