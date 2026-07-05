@@ -1,0 +1,33 @@
+{% extends 'base/base.html' %}{% load i18n %}
+{% block title %}{% trans 'Messages' %} - RENTPLAY{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper animate-fade">
+    <aside class="dashboard-sidebar" id="dashboardSidebar">
+        <div class="dashboard-sidebar-header"><div class="logo-icon"><i class="fas fa-building"></i></div><div class="dashboard-sidebar-logo">RENTPLAY</div><button class="sidebar-close" onclick="toggleDashboardSidebar()"><i class="fas fa-times"></i></button></div>
+        <nav class="dashboard-sidebar-nav"><a href="{% url 'rentplay:dashboard' %}" class="dashboard-sidebar-item"><i class="fas fa-chart-pie"></i> {% trans 'Dashboard' %}</a><a href="{% url 'rentplay:message_list' %}" class="dashboard-sidebar-item active"><i class="fas fa-envelope"></i> {% trans 'Messages' %}</a></nav>
+    </aside>
+    <div class="dashboard-overlay" id="dashboardOverlay" onclick="toggleDashboardSidebar()"></div>
+    <main class="dashboard-main">
+        <div class="dashboard-topbar"><div style="display:flex;align-items:center;gap:1rem;"><button class="mobile-toggle" onclick="toggleDashboardSidebar()"><i class="fas fa-bars"></i></button><h1 class="dashboard-topbar-title">{% trans 'Messages' %}</h1></div></div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-body" style="padding:0;">
+                {% if conversations %}
+                <div class="conversation-list">
+                    {% for conv in conversations %}
+                    <a href="{% url 'rentplay:message_conversation' conv.partner.id %}" class="conversation-item">
+                        <div class="conversation-avatar">{{ conv.partner.first_name|first|default:conv.partner.username|first }}</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">{{ conv.partner.get_full_name|default:conv.partner.username }}{% if conv.unread > 0 %}<span class="badge-count badge-danger">{{ conv.unread }}</span>{% endif %}</div>
+                            <div class="conversation-preview">{{ conv.last_message.content|truncatechars:60 }}</div>
+                        </div>
+                        <div class="conversation-time">{{ conv.last_message.created_at|date:"H:i" }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}<div class="empty-state"><i class="fas fa-envelope"></i><h3>{% trans 'No messages yet' %}</h3></div>{% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+{% block extra_js %}<script>function toggleDashboardSidebar(){var s=document.getElementById('dashboardSidebar'),o=document.getElementById('dashboardOverlay');s.classList.toggle('open');o.classList.toggle('open');}</script>{% endblock %}

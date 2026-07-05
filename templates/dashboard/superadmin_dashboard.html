@@ -1,0 +1,67 @@
+{% extends 'base/base.html' %}{% load i18n humanize %}
+{% block title %}{% trans 'Dashboard' %} - RENTPLAY{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper animate-fade">
+    <aside class="dashboard-sidebar" id="dashboardSidebar">
+        <div class="dashboard-sidebar-header"><div class="logo-icon"><i class="fas fa-building"></i></div><div class="dashboard-sidebar-logo">RENTPLAY</div><button class="sidebar-close" onclick="toggleDashboardSidebar()"><i class="fas fa-times"></i></button></div>
+        <nav class="dashboard-sidebar-nav">
+            <a href="{% url 'rentplay:dashboard' %}" class="dashboard-sidebar-item active"><i class="fas fa-chart-pie"></i> {% trans 'Dashboard' %}</a>
+            <a href="{% url 'rentplay:dashboard_properties' %}" class="dashboard-sidebar-item"><i class="fas fa-building"></i> {% trans 'Properties' %}</a>
+            <a href="{% url 'rentplay:dashboard_bookings' %}" class="dashboard-sidebar-item"><i class="fas fa-calendar-check"></i> {% trans 'Bookings' %}</a>
+            <a href="{% url 'rentplay:message_list' %}" class="dashboard-sidebar-item"><i class="fas fa-envelope"></i> {% trans 'Messages' %}</a>
+            <a href="{% url 'rentplay:notification_list' %}" class="dashboard-sidebar-item"><i class="fas fa-bell"></i> {% trans 'Notifications' %}{% if unread_notifications > 0 %}<span class="badge-count badge-danger">{{ unread_notifications }}</span>{% endif %}</a>
+            <a href="{% url 'rentplay:property_create' %}" class="dashboard-sidebar-item"><i class="fas fa-plus-circle"></i> {% trans 'Add Property' %}</a>
+            <a href="{% url 'rentplay:index' %}" target="_blank" class="dashboard-sidebar-item"><i class="fas fa-external-link-alt"></i> {% trans 'View Site' %}</a>
+        </nav>
+        <div class="dashboard-sidebar-footer"><div class="dashboard-sidebar-user"><div class="dashboard-sidebar-avatar"><i class="fas fa-user"></i></div><div class="dashboard-sidebar-user-info"><div>{{ user.get_full_name|default:user.username }}</div><span>{% trans 'Super Admin' %}</span></div></div></div>
+    </aside>
+    <div class="dashboard-overlay" id="dashboardOverlay" onclick="toggleDashboardSidebar()"></div>
+    <main class="dashboard-main">
+        <div class="dashboard-topbar"><div style="display:flex;align-items:center;gap:1rem;"><button class="mobile-toggle" onclick="toggleDashboardSidebar()"><i class="fas fa-bars"></i></button><h1 class="dashboard-topbar-title">{% trans 'Super Admin Dashboard' %}</h1></div><a href="{% url 'rentplay:property_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> {% trans 'Add Property' %}</a></div>
+        <div class="dashboard-stats-grid">
+            <div class="dashboard-stat-card blue"><div class="dashboard-stat-icon"><i class="fas fa-building"></i></div><div class="dashboard-stat-info"><h3>{{ stats.properties }}</h3><span>{% trans 'Properties' %}</span></div></div>
+            <div class="dashboard-stat-card green"><div class="dashboard-stat-icon"><i class="fas fa-check-circle"></i></div><div class="dashboard-stat-info"><h3>{{ stats.available }}</h3><span>{% trans 'Available' %}</span></div></div>
+            <div class="dashboard-stat-card purple"><div class="dashboard-stat-icon"><i class="fas fa-building"></i></div><div class="dashboard-stat-info"><h3>{{ stats.agencies }}</h3><span>{% trans 'Agencies' %}</span></div></div>
+            <div class="dashboard-stat-card orange"><div class="dashboard-stat-icon"><i class="fas fa-calendar-check"></i></div><div class="dashboard-stat-info"><h3>{{ stats.bookings }}</h3><span>{% trans 'Bookings' %}</span></div></div>
+            <div class="dashboard-stat-card pink"><div class="dashboard-stat-icon"><i class="fas fa-users"></i></div><div class="dashboard-stat-info"><h3>{{ stats.users }}</h3><span>{% trans 'Users' %}</span></div></div>
+        </div>
+        <div class="dashboard-grid-2">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header"><h3><i class="fas fa-building"></i> {% trans 'Recent Properties' %}</h3><a href="{% url 'rentplay:dashboard_properties' %}" class="btn btn-sm btn-secondary">{% trans 'View All' %}</a></div>
+                <div class="dashboard-card-body" style="padding:0;">
+                    {% if recent_properties %}<table class="dashboard-table"><thead><tr><th>{% trans 'Property' %}</th><th>{% trans 'Agency' %}</th><th>{% trans 'Price' %}</th><th>{% trans 'Status' %}</th></tr></thead><tbody>
+                    {% for prop in recent_properties %}<tr><td><strong>{{ prop.title }}</strong></td><td>{{ prop.agency.name }}</td><td style="color:var(--success);font-weight:700;">{{ prop.price|intcomma }}</td><td>{% if prop.status == 'available' %}<span class="badge badge-success">{% trans 'Available' %}</span>{% else %}<span class="badge badge-danger">{% trans 'Rented' %}</span>{% endif %}</td></tr>{% endfor %}
+                    </tbody></table>{% else %}<div class="empty-state"><i class="fas fa-building"></i><h3>{% trans 'No properties yet' %}</h3></div>{% endif %}
+                </div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-card-header"><h3><i class="fas fa-calendar-check"></i> {% trans 'Recent Bookings' %}</h3><a href="{% url 'rentplay:dashboard_bookings' %}" class="btn btn-sm btn-secondary">{% trans 'View All' %}</a></div>
+                <div class="dashboard-card-body" style="padding:0;">
+                    {% if recent_bookings %}<table class="dashboard-table"><thead><tr><th>{% trans 'Client' %}</th><th>{% trans 'Property' %}</th><th>{% trans 'Dates' %}</th><th>{% trans 'Status' %}</th></tr></thead><tbody>
+                    {% for bk in recent_bookings %}<tr><td><strong>{{ bk.client_name }}</strong></td><td>{{ bk.property_unit.title|truncatechars:25 }}</td><td>{{ bk.start_date|date:"Y-m-d" }} <i class="fas fa-arrow-left"></i> {{ bk.end_date|date:"Y-m-d" }}</td><td><span class="badge badge-{{ bk.status_css_class }}">{{ bk.get_status_display }}</span></td></tr>{% endfor %}
+                    </tbody></table>{% else %}<div class="empty-state"><i class="fas fa-calendar-check"></i><h3>{% trans 'No bookings yet' %}</h3></div>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-card" style="margin-top:1.5rem;">
+            <div class="dashboard-card-header"><h3><i class="fas fa-building"></i> {% trans 'Agencies Overview' %}</h3></div>
+            <div class="dashboard-card-body" style="padding:0;">
+                {% if agencies %}<table class="dashboard-table"><thead><tr><th>{% trans 'Agency' %}</th><th>{% trans 'City' %}</th><th>{% trans 'Properties' %}</th><th>{% trans 'Bookings' %}</th><th>{% trans 'Status' %}</th></tr></thead><tbody>
+                {% for ag in agencies %}<tr><td><strong>{{ ag.name }}</strong></td><td>{{ ag.city|default:"-" }}</td><td>{{ ag.prop_count|default:0 }}</td><td>{{ ag.booking_count|default:0 }}</td><td><span class="badge badge-{% if ag.status == 'active' %}success{% elif ag.status == 'pending' %}warning{% else %}danger{% endif %}">{{ ag.get_status_display }}</span></td></tr>{% endfor %}
+                </tbody></table>{% else %}<div class="empty-state"><i class="fas fa-building"></i><h3>{% trans 'No agencies yet' %}</h3></div>{% endif %}
+            </div>
+        </div>
+        <div class="dashboard-card" style="margin-top:1.5rem;">
+            <div class="dashboard-card-header"><h3><i class="fas fa-bolt"></i> {% trans 'Quick Actions' %}</h3></div>
+            <div class="dashboard-card-body">
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <a href="{% url 'rentplay:property_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> {% trans 'Add Property' %}</a>
+                    <a href="{% url 'rentplay:agency_list' %}" class="btn btn-secondary"><i class="fas fa-building"></i> {% trans 'View Agencies' %}</a>
+                    <a href="{% url 'rentplay:index' %}" target="_blank" class="btn btn-success"><i class="fas fa-external-link-alt"></i> {% trans 'View Site' %}</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+{% block extra_js %}<script>function toggleDashboardSidebar(){var s=document.getElementById('dashboardSidebar'),o=document.getElementById('dashboardOverlay');s.classList.toggle('open');o.classList.toggle('open');}</script>{% endblock %}
