@@ -1,0 +1,85 @@
+{% extends 'base/base.html' %}{% load i18n humanize %}
+{% block title %}{{ agency.name }} - RENTPLAY{% endblock %}
+{% block content %}
+<section class="agency-header animate-fade">
+    <div class="agency-header-content">
+        <div class="agency-logo-large">{% if agency.logo %}<img src="{{ agency.logo.url }}" alt="{{ agency.name }}">{% else %}<div class="agency-logo-placeholder"><i class="fas fa-building"></i></div>{% endif %}</div>
+        <div class="agency-info-header">
+            <h1>{{ agency.name }}</h1>
+            <p class="agency-location"><i class="fas fa-map-marker-alt"></i> {{ agency.city|default:"" }}{% if agency.district %} - {{ agency.district }}{% endif %}</p>
+            {% if agency.description %}<p class="agency-desc">{{ agency.description }}</p>{% endif %}
+            <div class="agency-stats-inline">
+                <span><i class="fas fa-building"></i> {{ stats.total }} {% trans 'Properties' %}</span>
+                <span><i class="fas fa-check-circle"></i> {{ stats.available }} {% trans 'Available' %}</span>
+                <span><i class="fas fa-ban"></i> {{ stats.rented }} {% trans 'Rented' %}</span>
+            </div>
+        </div>
+        <div class="agency-contact-header">
+            {% if agency.phone %}<a href="tel:{{ agency.phone }}" class="btn btn-call"><i class="fas fa-phone"></i> {% trans 'Call' %}</a>{% endif %}
+            {% if agency.whatsapp %}<a href="https://wa.me/{{ agency.whatsapp }}" target="_blank" class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i> {% trans 'WhatsApp' %}</a>{% endif %}
+        </div>
+    </div>
+</section>
+<div class="nav-tabs animate-fade" style="animation-delay:0.1s">
+    <a href="?nav=all" class="nav-tab {% if nav_filter == 'all' %}active{% endif %}"><i class="fas fa-th-large"></i> {% trans 'All Properties' %}</a>
+    <a href="?nav=available" class="nav-tab {% if nav_filter == 'available' %}active{% endif %}"><i class="fas fa-check-circle"></i> {% trans 'Available' %}</a>
+    <a href="?nav=rented" class="nav-tab {% if nav_filter == 'rented' %}active{% endif %}"><i class="fas fa-ban"></i> {% trans 'Rented' %}</a>
+</div>
+<div class="filters-toggle-card animate-fade" style="animation-delay:0.15s">
+    <button class="filters-toggle-btn" onclick="toggleFilters()"><i class="fas fa-sliders-h"></i><span>{% trans 'Search & Filter' %}</span><i class="fas fa-chevron-down" id="filtersChevron"></i></button>
+</div>
+<div class="filters-card animate-fade" id="filtersCard" style="display:none;">
+    <form method="get" class="filters-grid">
+        {% if nav_filter != 'all' %}<input type="hidden" name="nav" value="{{ nav_filter }}">{% endif %}
+        <div class="form-group"><label class="form-label"><i class="fas fa-search"></i> {% trans 'Search' %}</label>{{ filter_form.search }}</div>
+        <div class="form-group"><label class="form-label"><i class="fas fa-city"></i> {% trans 'City' %}</label>{{ filter_form.city }}</div>
+        <div class="form-group"><label class="form-label"><i class="fas fa-filter"></i> {% trans 'Type' %}</label>{{ filter_form.property_type }}</div>
+        <div class="form-group"><label class="form-label"><i class="fas fa-dollar-sign"></i> {% trans 'Max Price' %}</label>{{ filter_form.max_price }}</div>
+        <div class="form-group" style="display:flex;gap:0.5rem;align-items:flex-end;"><button type="submit" class="btn btn-primary" style="flex:1"><i class="fas fa-filter"></i> {% trans 'Apply' %}</button><a href="{{ agency.get_absolute_url }}" class="btn btn-secondary"><i class="fas fa-undo"></i></a></div>
+    </form>
+</div>
+<div class="properties-grid" id="propertiesGrid">
+    {% if page_obj %}{% for property in page_obj %}
+    <div class="property-card animate-fade {% if property.status == 'rented' %}property-rented{% endif %}" style="animation-delay:{{ forloop.counter0 }}00ms">
+        <div class="property-image-wrap">
+            {% if property.main_image %}<img src="{{ property.main_image }}" class="property-image" alt="{{ property.title }}" loading="lazy">{% else %}<img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" class="property-image" alt="{{ property.title }}" loading="lazy">{% endif %}
+            <div class="property-image-overlay"></div>
+            {% if property.status == 'available' %}<span class="property-badge badge-available">{% trans 'Available' %}</span>{% elif property.status == 'rented' %}<span class="property-badge badge-rented">{% trans 'Rented' %}</span>{% endif %}
+            {% if property.unit_code %}<div class="property-unit-code">{% trans 'Code' %}: {{ property.unit_code }}</div>{% endif %}
+            <div class="property-image-title">{{ property.title }}</div>
+        </div>
+        <div class="property-body">
+            <div class="property-price">{{ property.price|intcomma }} <span>{% trans 'SAR/month' %}</span></div>
+            <div class="property-meta-row"><div class="property-meta"><i class="fas fa-city icon-city"></i> {{ property.city|default:"-" }}</div><div class="property-meta"><i class="fas fa-map-marker-alt icon-map"></i> {{ property.district|default:"-" }}</div></div>
+            <div class="property-meta-row"><div class="property-meta"><i class="fas fa-home icon-tag"></i> {{ property.property_type|default:"-" }}</div><div class="property-meta"><i class="fas fa-bed icon-bed"></i> {{ property.rooms }} {% trans 'rooms' %}</div></div>
+            <div class="property-features">{% for feature in property.feature_list|slice:":4" %}<span class="feature-tag">{{ feature }}</span>{% endfor %}</div>
+            <div class="property-actions {% if property.status == 'rented' %}actions-rented{% endif %}">
+                {% if property.status == 'available' %}<a href="{{ property.get_absolute_url }}" class="btn btn-book"><i class="fas fa-calendar-check"></i> {% trans 'Book' %}</a>{% endif %}
+                <a href="{{ property.get_absolute_url }}" class="btn btn-location"><i class="fas fa-eye"></i> {% trans 'Details' %}</a>
+                {% if property.phone %}<a href="tel:{{ property.phone }}" class="btn btn-call"><i class="fas fa-phone"></i> {% trans 'Call' %}</a>{% endif %}
+                {% if property.whatsapp %}<a href="https://wa.me/{{ property.whatsapp }}" target="_blank" class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i></a>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}{% else %}<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-search"></i><h3>{% trans 'No properties found' %}</h3></div>{% endif %}
+</div>
+{% if page_obj.has_other_pages %}<div class="pagination animate-fade">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary"><i class="fas fa-chevron-left"></i> {% trans 'Previous' %}</a>{% endif %}<span class="page-info">{% trans 'Page' %} {{ page_obj.number }} {% trans 'of' %} {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">{% trans 'Next' %} <i class="fas fa-chevron-right"></i></a>{% endif %}</div>{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "{{ agency.name }}",
+    "description": "{{ agency.description|escapejs|truncatechars:200 }}",
+    "url": "{{ request.build_absolute_uri }}",
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "{{ agency.city|default:'' }}",
+        "addressRegion": "{{ agency.district|default:'' }}",
+        "addressCountry": "SA"
+    }
+    {% if agency.phone %},"telephone": "{{ agency.phone }}"{% endif %}
+}
+</script>
+{% endblock %}
