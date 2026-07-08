@@ -32,7 +32,22 @@
                     <div class="form-group">{{ form.features_text }}<small class="help-text">{% trans 'Separate features with commas' %}</small></div>
                     <h3 class="form-section-title"><i class="fas fa-images"></i> {% trans 'Images' %}</h3>
                     <div class="form-group"><label class="form-label">{% trans 'Upload Images' %}</label><input type="file" name="images" multiple accept="image/*" class="form-input"><small class="help-text">{% trans 'You can select multiple images' %}</small></div>
-                    {% if property and property.images.all %}<div class="current-images"><h4>{% trans 'Current Images' %}</h4><div class="image-grid">{% for img in property.images.all %}<div class="image-thumb"><img src="{{ img.image.url }}" alt=""></div>{% endfor %}</div></div>{% endif %}
+                    {% if property and property.images.all %}
+                    <div class="current-images">
+                        <h4>{% trans 'Current Images' %} ({{ property.images.count }})</h4>
+                        <div class="image-grid">
+                            {% for img in property.images.all %}
+                            <div class="image-thumb">
+                                <img src="{{ img.image.url }}" alt="">
+                                <form method="post" action="{% url 'rentplay:delete_property_image' img.pk %}" style="position:absolute;top:4px;{{ LANGUAGE_CODE|default:'ar' == 'ar' and 'left' or 'right' }}:4px;" onsubmit="return confirm('{% trans "Delete this image?" %}');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" style="width:28px;height:28px;padding:0;border-radius:50%;font-size:12px;" title="{% trans 'Delete' %}"><i class="fas fa-times"></i></button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                     <h3 class="form-section-title"><i class="fas fa-video"></i> {% trans 'Videos' %}</h3>
                     <div class="form-group">
                         <label class="form-label">{% trans 'Upload Videos' %}</label>
