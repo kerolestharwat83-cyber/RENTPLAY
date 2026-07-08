@@ -50,6 +50,8 @@ urlpatterns = [
     path('dashboard/properties/<int:pk>/edit/', views.property_edit, name='property_edit'),
     path('dashboard/properties/<int:pk>/delete/', views.property_delete, name='property_delete'),
     path('dashboard/properties/<int:pk>/toggle-status/', views.property_toggle_status, name='property_toggle_status'),
+    path('dashboard/images/<int:image_pk>/delete/', views.delete_property_image, name='delete_property_image'),
+    path('dashboard/videos/<int:video_pk>/delete/', views.delete_property_video, name='delete_property_video'),
     path('dashboard/bookings/', views.dashboard_bookings, name='dashboard_bookings'),
     path('dashboard/bookings/<int:pk>/update-status/', views.booking_update_status, name='booking_update_status'),
 
