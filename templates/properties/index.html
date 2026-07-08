@@ -1,0 +1,332 @@
+{% extends 'base/base.html' %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans 'RENTPLAY - Real Estate Marketplace' %}{% endblock %}
+
+{% block content %}
+
+<!-- Hero / Banner Slider -->
+<section class="hero animate-fade">
+    {% if hero_banners %}
+    <div class="hero-slider" id="heroSlider">
+        {% for banner in hero_banners %}
+        <div class="hero-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+            <div class="hero-slide-bg" style="background-image:url('{{ banner.image.url }}')"></div>
+            <div class="hero-slide-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-badge"><i class="fas fa-bullhorn"></i> {% if banner.agency %}{{ banner.agency.name }}{% else %}{% trans 'Featured' %}{% endif %}</div>
+                <h1>{{ banner.title }}</h1>
+                {% if banner.subtitle %}<p>{{ banner.subtitle }}</p>{% endif %}
+                {% if banner.link %}<a href="{{ banner.link }}" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> {% trans 'View Details' %}</a>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        <button class="slider-btn slider-prev" onclick="changeSlide(-1)"><i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}"></i></button>
+        <button class="slider-btn slider-next" onclick="changeSlide(1)"><i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}left{% else %}right{% endif %}"></i></button>
+        <div class="slider-dots">
+            {% for banner in hero_banners %}<span class="slider-dot {% if forloop.first %}active{% endif %}" onclick="goToSlide({{ forloop.counter0 }})"></span>{% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="hero-content">
+        <div class="hero-badge"><i class="fas fa-map-marker-alt"></i> {% trans 'Saudi Arabia' %}</div>
+        <h1>{% trans 'Find Your Perfect Home' %}</h1>
+        <p>{% trans 'Browse thousands of properties from top real estate agencies across the Kingdom' %}</p>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Stats -->
+<section class="stats-bar animate-fade" style="animation-delay:0.1s">
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-building"></i></div>
+        <div class="stat-info"><h4>{{ stats.total }}</h4><span>{% trans 'Total Units' %}</span></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info"><h4>{{ stats.available }}</h4><span>{% trans 'Available' %}</span></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red"><i class="fas fa-ban"></i></div>
+        <div class="stat-info"><h4>{{ stats.rented }}</h4><span>{% trans 'Rented' %}</span></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange"><i class="fas fa-building"></i></div>
+        <div class="stat-info"><h4>{{ stats.agencies }}</h4><span>{% trans 'Agencies' %}</span></div>
+    </div>
+</section>
+
+<!-- Nav Tabs -->
+<div class="nav-tabs animate-fade" style="animation-delay:0.15s">
+    <a href="?nav=all" class="nav-tab {% if nav_filter == 'all' %}active{% endif %}"><i class="fas fa-th-large"></i> {% trans 'All Units' %}</a>
+    <a href="?nav=available" class="nav-tab {% if nav_filter == 'available' %}active{% endif %}"><i class="fas fa-check-circle"></i> {% trans 'Available' %}</a>
+    <a href="?nav=rented" class="nav-tab {% if nav_filter == 'rented' %}active{% endif %}"><i class="fas fa-ban"></i> {% trans 'Rented' %}</a>
+</div>
+
+<!-- Filters Toggle -->
+<div class="filters-toggle-card animate-fade" style="animation-delay:0.2s">
+    <button class="filters-toggle-btn" onclick="toggleFilters()">
+        <i class="fas fa-sliders-h"></i>
+        <span>{% trans 'Search & Filter' %}</span>
+        <i class="fas fa-chevron-down" id="filtersChevron"></i>
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="filters-card animate-fade" id="filtersCard" style="display:none;">
+    <form method="get" class="filters-grid" id="filterForm">
+        {% if nav_filter != 'all' %}<input type="hidden" name="nav" value="{{ nav_filter }}">{% endif %}
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-search"></i> {% trans 'Search' %}</label>
+            {{ filter_form.search }}
+        </div>
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-city"></i> {% trans 'City' %}</label>
+            {{ filter_form.city }}
+        </div>
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-map-marker-alt"></i> {% trans 'District' %}</label>
+            {{ filter_form.district }}
+            <small class="help-text" id="districtHelp">{% trans 'Select a city first to see available districts' %}</small>
+        </div>
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-filter"></i> {% trans 'Type' %}</label>
+            {{ filter_form.property_type }}
+        </div>
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-dollar-sign"></i> {% trans 'Max Price (SAR)' %}</label>
+            {{ filter_form.max_price }}
+        </div>
+        <div class="form-group" style="display:flex; gap:0.5rem; align-items:flex-end;">
+            <button type="submit" class="btn btn-primary" style="flex:1"><i class="fas fa-filter"></i> {% trans 'Apply' %}</button>
+            <a href="{% url 'rentplay:index' %}" class="btn btn-secondary"><i class="fas fa-undo"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Sort Options -->
+<div class="sort-bar animate-fade" style="animation-delay:0.25s">
+    <span class="sort-label"><i class="fas fa-sort"></i> {% trans 'Sort by' %}</span>
+    <div class="sort-options">
+        <a href="?{% if nav_filter != 'all' %}nav={{ nav_filter }}&{% endif %}sort=newest" class="sort-option {% if request.GET.sort == 'newest' or not request.GET.sort %}active{% endif %}">{% trans 'Newest' %}</a>
+        <a href="?{% if nav_filter != 'all' %}nav={{ nav_filter }}&{% endif %}sort=price_low" class="sort-option {% if request.GET.sort == 'price_low' %}active{% endif %}">{% trans 'Price: Low to High' %}</a>
+        <a href="?{% if nav_filter != 'all' %}nav={{ nav_filter }}&{% endif %}sort=price_high" class="sort-option {% if request.GET.sort == 'price_high' %}active{% endif %}">{% trans 'Price: High to Low' %}</a>
+        <a href="?{% if nav_filter != 'all' %}nav={{ nav_filter }}&{% endif %}sort=views" class="sort-option {% if request.GET.sort == 'views' %}active{% endif %}">{% trans 'Most Viewed' %}</a>
+    </div>
+</div>
+
+<!-- Skeleton Loading -->
+<div class="skeleton-grid" id="skeletonGrid">
+    {% for i in "123456789012"|make_list %}
+    <div class="skeleton-card">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-body">
+            <div class="skeleton-line" style="width:60%"></div>
+            <div class="skeleton-line" style="width:40%"></div>
+            <div class="skeleton-line" style="width:80%"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Properties Grid -->
+<div class="properties-grid" id="propertiesGrid" style="display:none;">
+    {% if page_obj %}
+        {% for property in page_obj %}
+        <div class="property-card animate-fade {% if property.status == 'rented' %}property-rented{% endif %}" style="animation-delay:{{ forloop.counter0|add:3 }}00ms">
+            <div class="property-image-wrap" style="cursor:pointer;" onclick="openGallery({{ property.id }});">
+                <div class="card-slider" id="cardSlider{{ property.id }}">
+                    <div class="card-slider-track" id="track{{ property.id }}">
+                        {% with all_images=property.images.all %}
+                        {% if property.main_image %}
+                        <div class="card-slide active" data-slide="0">
+                            <img src="{{ property.main_image }}" class="property-image" alt="{{ property.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'">
+                        </div>
+                        {% endif %}
+                        {% for img in all_images %}
+                        {% if img.image.url != property.main_image %}
+                        <div class="card-slide" data-slide="{{ forloop.counter }}">
+                            <img src="{{ img.image.url }}" class="property-image" alt="{{ property.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'">
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% if not property.main_image and not all_images %}
+                        <div class="card-slide active" data-slide="0">
+                            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" class="property-image" alt="{{ property.title }}" loading="lazy">
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    <button class="card-slider-btn card-slider-prev" type="button" data-slider="cardSlider{{ property.id }}"><i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}"></i></button>
+                    <button class="card-slider-btn card-slider-next" type="button" data-slider="cardSlider{{ property.id }}"><i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}left{% else %}right{% endif %}"></i></button>
+                    <div class="card-slider-dots" id="dots{{ property.id }}"></div>
+                </div>
+                <div class="property-image-overlay"></div>
+                {% if property.status == 'available' %}
+                <span class="property-badge badge-available">{% trans 'Available' %}</span>
+                {% elif property.status == 'rented' %}
+                <span class="property-badge badge-rented">{% trans 'Rented' %}</span>
+                {% else %}
+                <span class="property-badge badge-warning">{{ property.get_status_display }}</span>
+                {% endif %}
+                {% if property.unit_code %}<div class="property-unit-code">{% trans 'Code' %}: {{ property.unit_code }}</div>{% endif %}
+                {% if property.images.count|add:property.videos.count > 1 %}
+                <div class="property-image-counter"><i class="fas fa-images"></i> {{ property.images.count|add:property.videos.count }}</div>
+                {% endif %}
+                <div class="property-image-title">{{ property.title }}</div>
+            </div>
+            <div class="property-body">
+                <div class="property-price">{{ property.price|intcomma }} <span>{% trans 'SAR/month' %}</span></div>
+                <div class="property-meta-row">
+                    <div class="property-meta"><i class="fas fa-city icon-city"></i> {{ property.city|default:"-" }}</div>
+                    <div class="property-meta"><i class="fas fa-map-marker-alt icon-map"></i> {{ property.district|default:"-" }}</div>
+                </div>
+                <div class="property-meta-row">
+                    <div class="property-meta"><i class="fas fa-home icon-tag"></i> {{ property.property_type|default:"-" }}</div>
+                    <div class="property-meta"><i class="fas fa-bed icon-bed"></i> {{ property.rooms }} {% trans 'rooms' %}</div>
+                </div>
+                <div class="property-features">
+                    {% for feature in property.feature_list|slice:":4" %}<span class="feature-tag">{{ feature }}</span>{% endfor %}
+                </div>
+                <div class="agency-badge">
+                    <a href="{{ property.agency.get_absolute_url }}" class="agency-link"><i class="fas fa-building"></i> {{ property.agency.name }}</a>
+                </div>
+                <div style="margin-bottom:0.75rem;">
+                    <a href="{% url 'rentplay:property_compare_add' property.id %}" class="btn btn-sm btn-secondary" style="width:100%;">
+                        <i class="fas fa-balance-scale"></i> {% trans 'Add to Compare' %}
+                    </a>
+                </div>
+                <div class="property-actions {% if property.status == 'rented' %}actions-rented{% endif %}">
+                    {% if property.status == 'available' %}
+                    <a href="{{ property.get_absolute_url }}" class="btn btn-book"><i class="fas fa-calendar-check"></i> {% trans 'Book' %}</a>
+                    {% endif %}
+                    <a href="{{ property.get_absolute_url }}" class="btn btn-location"><i class="fas fa-eye"></i> {% trans 'Details' %}</a>
+                    {% if property.phone %}<a href="tel:{{ property.phone }}" class="btn btn-call"><i class="fas fa-phone"></i> {% trans 'Call' %}</a>{% endif %}
+                    {% if property.whatsapp %}<a href="https://wa.me/{{ property.whatsapp }}" target="_blank" class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i></a>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state" style="grid-column:1/-1;">
+            <i class="fas fa-search"></i>
+            <h3>{% trans 'No properties found' %}</h3>
+            <p>{% trans 'Try changing your search criteria' %}</p>
+        </div>
+    {% endif %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination animate-fade">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if nav_filter != 'all' %}&nav={{ nav_filter }}{% endif %}" class="btn btn-secondary">
+        <i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}left{% else %}right{% endif %}"></i> {% trans 'Previous' %}
+    </a>
+    {% endif %}
+    <span class="page-info">{% trans 'Page' %} {{ page_obj.number }} {% trans 'of' %} {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if nav_filter != 'all' %}&nav={{ nav_filter }}{% endif %}" class="btn btn-secondary">
+        {% trans 'Next' %} <i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}"></i>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": "{% trans 'RENTPLAY Properties' %}",
+    "description": "{% trans 'Browse available properties for rent in Saudi Arabia' %}",
+    "url": "{{ request.build_absolute_uri }}"
+}
+</script>
+<script>
+window.addEventListener('load', function() {
+    document.getElementById('skeletonGrid').style.display = 'none';
+    document.getElementById('propertiesGrid').style.display = 'grid';
+});
+
+var currentSlide = 0;
+var slides = document.querySelectorAll('.hero-slide');
+var dots = document.querySelectorAll('.slider-dot');
+var totalSlides = slides.length;
+
+function showSlide(index) {
+    if (totalSlides === 0) return;
+    if (index >= totalSlides) currentSlide = 0;
+    else if (index < 0) currentSlide = totalSlides - 1;
+    else currentSlide = index;
+    slides.forEach(function(s, i) { s.classList.toggle('active', i === currentSlide); });
+    dots.forEach(function(d, i) { d.classList.toggle('active', i === currentSlide); });
+}
+function changeSlide(direction) { showSlide(currentSlide + direction); }
+function goToSlide(index) { showSlide(index); }
+if (totalSlides > 1) {
+    setInterval(function() { changeSlide(1); }, 5000);
+}
+
+// ===== Card Image Sliders =====
+(function() {
+    var sliderStates = {};
+
+    function goToSlide(sliderId, index) {
+        var slider = document.getElementById(sliderId);
+        if (!slider) return;
+        var slides = slider.querySelectorAll('.card-slide');
+        var track = slider.querySelector('.card-slider-track');
+        var dots = slider.querySelectorAll('.card-slider-dot');
+        if (slides.length === 0) return;
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        sliderStates[sliderId] = index;
+        if (track) track.style.transform = 'translateX(' + (index * -100) + '%)';
+        slides.forEach(function(s, i) { s.classList.toggle('active', i === index); });
+        dots.forEach(function(d, i) { d.classList.toggle('active', i === index); });
+    }
+    function nextSlide(sliderId) { goToSlide(sliderId, (sliderStates[sliderId] || 0) + 1); }
+    function prevSlide(sliderId) { goToSlide(sliderId, (sliderStates[sliderId] || 0) - 1); }
+
+    document.querySelectorAll('.card-slider').forEach(function(slider) {
+        var sliderId = slider.id;
+        var slides = slider.querySelectorAll('.card-slide');
+        var dotsContainer = slider.querySelector('.card-slider-dots');
+        if (slides.length === 0) return;
+        sliderStates[sliderId] = 0;
+        slides.forEach(function(s, i) { s.classList.toggle('active', i === 0); });
+        var track = slider.querySelector('.card-slider-track');
+        if (track) track.style.transform = 'translateX(0%)';
+        if (dotsContainer) {
+            if (slides.length <= 1) { dotsContainer.style.display = 'none'; }
+            else {
+                dotsContainer.innerHTML = '';
+                for (var i = 0; i < slides.length; i++) {
+                    var dot = document.createElement('span');
+                    dot.className = 'card-slider-dot' + (i === 0 ? ' active' : '');
+                    dot.addEventListener('click', (function(idx) {
+                        return function(e) { e.stopPropagation(); goToSlide(sliderId, idx); };
+                    })(i));
+                    dotsContainer.appendChild(dot);
+                }
+            }
+        }
+        var prevBtn = slider.querySelector('.card-slider-prev');
+        var nextBtn = slider.querySelector('.card-slider-next');
+        if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); prevSlide(sliderId); });
+        if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); nextSlide(sliderId); });
+
+        // Touch swipe
+        var startX = 0, isDragging = false;
+        slider.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; isDragging = true; }, { passive: true });
+        slider.addEventListener('touchend', function(e) {
+            if (!isDragging) return; isDragging = false;
+            var diffX = startX - e.changedTouches[0].clientX;
+            if (Math.abs(diffX) > 50) { if (diffX > 0) nextSlide(sliderId); else prevSlide(sliderId); }
+        }, { passive: true });
+    });
+})();
+</script>
+{% endblock %}
