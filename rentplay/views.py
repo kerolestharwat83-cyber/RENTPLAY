@@ -815,6 +815,38 @@ def property_delete(request, pk):
     return redirect('rentplay:dashboard_properties')
 
 
+# ==================== DELETE PROPERTY IMAGE (NEW) ====================
+@login_required
+@require_POST
+def delete_property_image(request, image_pk):
+    img = get_object_or_404(PropertyImage, pk=image_pk)
+    prop = img.property_unit
+    user = request.user
+    if not user.is_superadmin and prop.agency != user.agency:
+        return HttpResponseForbidden()
+    img.delete()
+    messages.success(request, _('Image deleted successfully.'))
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    return redirect(request.META.get('HTTP_REFERER', 'rentplay:dashboard_properties'))
+
+
+# ==================== DELETE PROPERTY VIDEO (NEW) ====================
+@login_required
+@require_POST
+def delete_property_video(request, video_pk):
+    vid = get_object_or_404(PropertyVideo, pk=video_pk)
+    prop = vid.property_unit
+    user = request.user
+    if not user.is_superadmin and prop.agency != user.agency:
+        return HttpResponseForbidden()
+    vid.delete()
+    messages.success(request, _('Video deleted successfully.'))
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    return redirect(request.META.get('HTTP_REFERER', 'rentplay:dashboard_properties'))
+
+
 # ==================== PROPERTY STATUS TOGGLE (NEW) ====================
 @login_required
 @require_POST
