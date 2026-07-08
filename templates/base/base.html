@@ -24,10 +24,10 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "RENTPLAY",
-    "url": "{{ request.build_absolute_uri '/' }}",
+    "url": "{{ request.build_absolute_uri }}",
     "potentialAction": {
         "@type": "SearchAction",
-        "target": "{{ request.build_absolute_uri '/' }}?search={search_term_string}",
+        "target": "{{ request.build_absolute_uri }}?search={search_term_string}",
         "query-input": "required name=search_term_string"
     }
 }
