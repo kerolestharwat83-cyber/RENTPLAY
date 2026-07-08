@@ -237,7 +237,7 @@ class PropertySearchForm(forms.Form):
 
 # ==================== PROPERTY FORM ====================
 class PropertyForm(forms.ModelForm):
-    """Property creation/editing form with video upload support."""
+    """Property creation/editing form."""
 
     features_text = forms.CharField(
         required=False,
@@ -253,13 +253,10 @@ class PropertyForm(forms.ModelForm):
         required=False, widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': _('46.6753')}),
         label=_('Longitude'), max_digits=10, decimal_places=7
     )
-    # FIX: Use FileInput instead of ClearableFileInput to support multiple=True
-    videos = forms.FileField(
-        required=False,
-        widget=forms.FileInput(attrs={'class': 'form-input', 'multiple': True, 'accept': 'video/mp4,video/webm'}),
-        label=_('Upload Videos'),
-        help_text=_('Upload one or more videos (MP4/WebM, max 10MB each)')
-    )
+    # NOTE: Video upload is handled via manual HTML <input> in the template
+    # and processed in the view using request.FILES.getlist('videos')
+    # Do NOT add a videos FileField here - Django's FileInput and ClearableFileInput
+    # both raise ValueError when multiple=True is used.
 
     class Meta:
         model = Property
