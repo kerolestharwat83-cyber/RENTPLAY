@@ -415,7 +415,38 @@ def property_compare_remove(request, property_pk):
     return redirect(request.META.get('HTTP_REFERER', 'rentplay:index'))
 
 
-# ==================== SITEMAP.XML ====================
+# ==================== DJANGO SITEMAP CLASSES (for config/urls.py) ====================
+from django.contrib.sitemaps import Sitemap
+
+class PropertySitemap(Sitemap):
+    changefreq = 'daily'
+    priority = 0.8
+
+    def items(self):
+        return Property.objects.filter(is_published=True)
+
+    def lastmod(self, obj):
+        return obj.updated_at
+
+    def location(self, obj):
+        return obj.get_absolute_url()
+
+
+class AgencySitemap(Sitemap):
+    changefreq = 'weekly'
+    priority = 0.6
+
+    def items(self):
+        return Agency.objects.filter(status=Agency.Status.ACTIVE)
+
+    def lastmod(self, obj):
+        return obj.updated_at
+
+    def location(self, obj):
+        return obj.get_absolute_url()
+
+
+# ==================== SITEMAP.XML (standalone view) ====================
 def sitemap_xml(request):
     """Generate dynamic sitemap.xml"""
     from django.utils import timezone
