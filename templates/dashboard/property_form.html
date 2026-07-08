@@ -1,0 +1,69 @@
+{% extends 'base/base.html' %}{% load i18n %}
+{% block title %}{{ title }} - RENTPLAY{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper animate-fade">
+    <aside class="dashboard-sidebar" id="dashboardSidebar">
+        <div class="dashboard-sidebar-header"><div class="logo-icon"><i class="fas fa-building"></i></div><div class="dashboard-sidebar-logo">RENTPLAY</div><button class="sidebar-close" onclick="toggleDashboardSidebar()"><i class="fas fa-times"></i></button></div>
+        <nav class="dashboard-sidebar-nav"><a href="{% url 'rentplay:dashboard' %}" class="dashboard-sidebar-item"><i class="fas fa-chart-pie"></i> {% trans 'Dashboard' %}</a><a href="{% url 'rentplay:dashboard_properties' %}" class="dashboard-sidebar-item"><i class="fas fa-building"></i> {% trans 'Properties' %}</a><a href="{% url 'rentplay:property_create' %}" class="dashboard-sidebar-item active"><i class="fas fa-plus-circle"></i> {% trans 'Add Property' %}</a></nav>
+    </aside>
+    <div class="dashboard-overlay" id="dashboardOverlay" onclick="toggleDashboardSidebar()"></div>
+    <main class="dashboard-main">
+        <div class="dashboard-topbar"><div style="display:flex;align-items:center;gap:1rem;"><button class="mobile-toggle" onclick="toggleDashboardSidebar()"><i class="fas fa-bars"></i></button><h1 class="dashboard-topbar-title">{{ title }}</h1></div></div>
+        <div class="dashboard-card" style="max-width:900px;">
+            <div class="dashboard-card-body">
+                <form method="post" enctype="multipart/form-data" class="property-form">
+                    {% csrf_token %}{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                    <h3 class="form-section-title"><i class="fas fa-info-circle"></i> {% trans 'Basic Information' %}</h3>
+                    <div class="form-row"><div class="form-group"><label class="form-label">{% trans 'Unit Code' %} *</label>{{ form.unit_code }}{% if form.unit_code.errors %}<span class="error">{{ form.unit_code.errors }}</span>{% endif %}</div><div class="form-group"><label class="form-label">{% trans 'Property Title' %} *</label>{{ form.title }}{% if form.title.errors %}<span class="error">{{ form.title.errors }}</span>{% endif %}</div></div>
+                    <div class="form-group"><label class="form-label">{% trans 'Description' %}</label>{{ form.description }}</div>
+                    <h3 class="form-section-title"><i class="fas fa-map-marker-alt"></i> {% trans 'Type & Location' %}</h3>
+                    <div class="form-row"><div class="form-group"><label class="form-label">{% trans 'Property Type' %}</label>{{ form.property_type }}</div><div class="form-group"><label class="form-label">{% trans 'City' %}</label>{{ form.city }}</div><div class="form-group"><label class="form-label">{% trans 'District' %}</label>{{ form.district }}</div></div>
+                    <h3 class="form-section-title"><i class="fas fa-list"></i> {% trans 'Property Details' %}</h3>
+                    <div class="form-row"><div class="form-group"><label class="form-label">{% trans 'Rooms' %}</label>{{ form.rooms }}</div><div class="form-group"><label class="form-label">{% trans 'Bathrooms' %}</label>{{ form.bathrooms }}</div><div class="form-group"><label class="form-label">{% trans 'Area (sqm)' %}</label>{{ form.area }}</div><div class="form-group"><label class="form-label">{% trans 'Floor' %}</label>{{ form.floor }}</div></div>
+                    <h3 class="form-section-title"><i class="fas fa-dollar-sign"></i> {% trans 'Financial Details' %}</h3>
+                    <div class="form-row"><div class="form-group"><label class="form-label">{% trans 'Monthly Rent (SAR)' %} *</label>{{ form.price }}</div><div class="form-group"><label class="form-label">{% trans 'Payment Period' %}</label>{{ form.payment_period }}</div></div>
+                    <h3 class="form-section-title"><i class="fas fa-toggle-on"></i> {% trans 'Status' %}</h3>
+                    <div class="form-row"><div class="form-group"><label class="form-label">{% trans 'Status' %}</label>{{ form.status }}</div><div class="form-group"><label class="form-label">{% trans 'Rent End Date' %}</label>{{ form.rent_end_date }}</div></div>
+                    <h3 class="form-section-title"><i class="fas fa-phone"></i> {% trans 'Contact Information' %}</h3>
+                    <div class="form-row"><div class="form-group"><label class="form-label">{% trans 'Phone' %}</label>{{ form.phone }}</div><div class="form-group"><label class="form-label">{% trans 'WhatsApp' %}</label>{{ form.whatsapp }}</div></div>
+                    <div class="form-group"><label class="form-label">{% trans 'Google Maps Link' %}</label>{{ form.map_link }}</div>
+                    <div class="form-row"><div class="form-group"><label class="form-label">{% trans 'Latitude' %}</label>{{ form.lat }}</div><div class="form-group"><label class="form-label">{% trans 'Longitude' %}</label>{{ form.lng }}</div></div>
+                    <h3 class="form-section-title"><i class="fas fa-star"></i> {% trans 'Features' %}</h3>
+                    <div class="form-group">{{ form.features_text }}<small class="help-text">{% trans 'Separate features with commas' %}</small></div>
+                    <h3 class="form-section-title"><i class="fas fa-images"></i> {% trans 'Images' %}</h3>
+                    <div class="form-group"><label class="form-label">{% trans 'Upload Images' %}</label><input type="file" name="images" multiple accept="image/*" class="form-input"><small class="help-text">{% trans 'You can select multiple images' %}</small></div>
+                    {% if property and property.images.all %}
+                    <div class="current-images">
+                        <h4>{% trans 'Current Images' %} ({{ property.images.count }})</h4>
+                        <div class="image-grid">
+                            {% for img in property.images.all %}
+                            <div class="image-thumb">
+                                <img src="{{ img.image.url }}" alt="">
+                                <form method="post" action="{% url 'rentplay:delete_property_image' img.pk %}" class="delete-img-form" onsubmit="return confirm('{% trans "Delete this image?" %}');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" title="{% trans 'Delete' %}"><i class="fas fa-times"></i></button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <h3 class="form-section-title"><i class="fas fa-video"></i> {% trans 'Videos' %}</h3>
+                    <div class="form-group">
+                        <label class="form-label">{% trans 'Upload Videos' %}</label>
+                        <input type="file" name="videos" multiple accept="video/*" class="form-input">
+                        <small class="help-text">{% trans 'You can select multiple videos (MP4, max 10MB each)' %}</small>
+                    </div>
+                    <div id="videoPreview" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;"></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> {{ action }}</button><a href="{% url 'rentplay:dashboard_properties' %}" class="btn btn-secondary">{% trans 'Cancel' %}</a></div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>function toggleDashboardSidebar(){var s=document.getElementById('dashboardSidebar'),o=document.getElementById('dashboardOverlay');s.classList.toggle('open');o.classList.toggle('open');}
+document.getElementById('prop_city').addEventListener('change',function(){var cityId=this.value;var districtSelect=document.getElementById('prop_district');districtSelect.innerHTML='<option value="">---------</option>';if(cityId){fetch('/ajax/districts/?city_id='+cityId).then(function(r){return r.json();}).then(function(data){data.districts.forEach(function(d){var opt=document.createElement('option');opt.value=d.id;opt.textContent=d.name;districtSelect.appendChild(opt);});});}});
+</script>
+{% endblock %}
