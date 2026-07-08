@@ -253,9 +253,10 @@ class PropertyForm(forms.ModelForm):
         required=False, widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': _('46.6753')}),
         label=_('Longitude'), max_digits=10, decimal_places=7
     )
+    # FIX: Use FileInput instead of ClearableFileInput to support multiple=True
     videos = forms.FileField(
         required=False,
-        widget=forms.ClearableFileInput(attrs={'class': 'form-input', 'multiple': True, 'accept': 'video/mp4,video/webm'}),
+        widget=forms.FileInput(attrs={'class': 'form-input', 'multiple': True, 'accept': 'video/mp4,video/webm'}),
         label=_('Upload Videos'),
         help_text=_('Upload one or more videos (MP4/WebM, max 10MB each)')
     )
@@ -267,7 +268,7 @@ class PropertyForm(forms.ModelForm):
             'city', 'district', 'rooms', 'bathrooms', 'area', 'floor',
             'price', 'payment_period', 'status', 'rent_end_date',
             'phone', 'whatsapp', 'map_link', 'features_text', 'lat', 'lng',
-            'is_published', 'is_featured', 'videos'
+            'is_published', 'is_featured'
         ]
         widgets = {
             'unit_code': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'R001'}),
@@ -320,11 +321,9 @@ class PropertyForm(forms.ModelForm):
     def clean_title(self):
         """Case-insensitive duplicate title check per agency."""
         title = self.cleaned_data.get('title', '').strip()
-        # Get agency from instance (since agency is not in form fields, it's set in save())
         agency = None
         if self.instance and self.instance.pk:
             agency = self.instance.agency
-        # Fallback: try to get from the user if creating a new property
         if not agency and self.user and hasattr(self.user, 'agency') and self.user.agency:
             agency = self.user.agency
 
