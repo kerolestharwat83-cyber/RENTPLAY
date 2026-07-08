@@ -138,23 +138,15 @@
                 <div class="card-slider" id="cardSlider{{ property.id }}">
                     <div class="card-slider-track" id="track{{ property.id }}">
                         {% with all_images=property.images.all %}
-                        {% if property.main_image %}
-                        <div class="card-slide active" data-slide="0">
-                            <img src="{{ property.main_image }}" class="property-image" alt="{{ property.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'">
-                        </div>
-                        {% endif %}
                         {% for img in all_images %}
-                        {% if img.image.url != property.main_image %}
-                        <div class="card-slide" data-slide="{{ forloop.counter }}">
-                            <img src="{{ img.image.url }}" class="property-image" alt="{{ property.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'">
+                        <div class="card-slide{% if forloop.first %} active{% endif %}" data-slide="{{ forloop.counter0 }}">
+                            <img src="{{ img.image.url }}" class="property-image" alt="{{ property.title }}" loading="lazy" onerror="this.parentElement.style.display='none';">
                         </div>
-                        {% endif %}
-                        {% endfor %}
-                        {% if not property.main_image and not all_images %}
+                        {% empty %}
                         <div class="card-slide active" data-slide="0">
-                            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" class="property-image" alt="{{ property.title }}" loading="lazy">
+                            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80" class="property-image" alt="{{ property.title }}" loading="lazy">
                         </div>
-                        {% endif %}
+                        {% endfor %}
                         {% endwith %}
                     </div>
                     <button class="card-slider-btn card-slider-prev" type="button" data-slider="cardSlider{{ property.id }}"><i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}"></i></button>
