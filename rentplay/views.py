@@ -1093,7 +1093,7 @@ def set_language(request):
         lang = 'ar'
 
     translation.activate(lang)
-    request.session[translation.LANGUAGE_SESSION_KEY] = lang
+    request.session['django_language'] = lang
 
     next_url = request.GET.get('next', '/')
     response = redirect(next_url)
