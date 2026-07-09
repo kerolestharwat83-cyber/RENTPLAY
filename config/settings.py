@@ -181,6 +181,7 @@ WHITENOISE_MANIFEST_STRICT = False
 # ==================== DEFAULTS ====================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'rentplay.User'
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
@@ -205,8 +206,7 @@ PROPERTIES_PER_PAGE = 15
 # ==================== CACHING ====================
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'rentplay-cache',
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
 
