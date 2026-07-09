@@ -19,14 +19,16 @@ from .models import (
 class LoginForm(AuthenticationForm):
     """Custom login form with styled widgets."""
 
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': _('Username')}),
-        label=_('Username')
-    )
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-input', 'placeholder': _('Password')}),
-        label=_('Password')
-    )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget = forms.TextInput(
+            attrs={'class': 'form-input', 'placeholder': _('Username')}
+        )
+        self.fields['username'].label = _('Username')
+        self.fields['password'].widget = forms.PasswordInput(
+            attrs={'class': 'form-input', 'placeholder': _('Password')}
+        )
+        self.fields['password'].label = _('Password')
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -53,11 +55,16 @@ class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'phone', 'password1', 'password2']
+        widgets = {
+            'password1': forms.PasswordInput(attrs={'class': 'form-input'}),
+            'password2': forms.PasswordInput(attrs={'class': 'form-input'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in ['username', 'password1', 'password2']:
-            self.fields[field].widget.attrs.update({'class': 'form-input'})
+        self.fields['username'].widget.attrs.update({'class': 'form-input'})
+        self.fields['password1'].widget = forms.PasswordInput(attrs={'class': 'form-input'})
+        self.fields['password2'].widget = forms.PasswordInput(attrs={'class': 'form-input'})
 
     def clean_username(self):
         username = self.cleaned_data.get('username', '').lower().strip()
