@@ -162,6 +162,10 @@ a { text-decoration: none; color: inherit; }
 .nav-btn.active { background: var(--primary-light); color: var(--primary); box-shadow: var(--shadow-sm); }
 .admin-link { background: linear-gradient(135deg, var(--dark-800) 0%, var(--dark-700) 100%); color: white !important; }
 .admin-link:hover { background: linear-gradient(135deg, var(--dark-700) 0%, var(--dark-800) 100%); transform: translateY(-2px); }
+.btn-login { color: var(--primary) !important; border: 2px solid var(--primary-light) !important; }
+.btn-login:hover { background: var(--primary-light); color: var(--primary) !important; }
+.btn-register { background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%) !important; color: white !important; box-shadow: 0 4px 14px rgba(79,70,229,0.25); }
+.btn-register:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,70,229,0.35); color: white !important; }
 .lang-switcher { display: inline; }
 .lang-switcher button { background: transparent; cursor: pointer; }
 .mobile-toggle { display: none; background: none; border: none; font-size: 1.5rem; color: var(--dark-800); cursor: pointer; padding: 0.5rem; }
@@ -1161,54 +1165,96 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 }
 
 /* ==================== PROPERTY COMPARE ==================== */
-.compare-grid {
-    display: grid;
-    grid-template-columns: 200px repeat(auto-fit, minmax(280px, 1fr));
-    gap: 0;
+.compare-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     background: var(--white);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     border: 1px solid var(--gray-200);
-    overflow: hidden;
 }
-.compare-label {
-    padding: 1rem 1.5rem;
-    font-weight: 700;
-    color: var(--gray);
-    font-size: 0.85rem;
-    border-bottom: 1px solid var(--gray-200);
-    background: var(--gray-100);
-    display: flex;
-    align-items: center;
-}
-.compare-value {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--gray-200);
-    border-left: 1px solid var(--gray-200);
-    font-weight: 600;
-    color: var(--dark-800);
-}
-.compare-value.price {
-    color: var(--success);
-    font-size: 1.25rem;
-}
-.compare-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--gray-200);
-    border-left: 1px solid var(--gray-200);
-    text-align: center;
-}
-.compare-header img {
+.compare-table {
     width: 100%;
-    height: 160px;
-    object-fit: cover;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+.compare-table thead th {
+    padding: 1.25rem 1rem;
+    background: var(--dark-800);
+    color: white;
+    text-align: center;
+    border: 1px solid var(--gray-200);
+    min-width: 220px;
+}
+.compare-table thead th.compare-label-header {
+    background: var(--dark-800);
+    color: white;
+    width: 160px;
+    min-width: 160px;
+    max-width: 160px;
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 10;
+    border-inline-end: 2px solid var(--gray-300);
+}
+.compare-prop-img {
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
     border-radius: var(--radius);
     margin-bottom: 0.75rem;
 }
-.compare-header h3 {
-    font-size: 1rem;
+.compare-prop-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.compare-table thead th h3 {
+    font-size: 0.95rem;
     font-weight: 700;
-    color: var(--dark);
+    margin: 0.5rem 0;
+    color: white;
+}
+.compare-table tbody td {
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--gray-200);
+    text-align: center;
+    vertical-align: middle;
+}
+.compare-table tbody td.compare-label {
+    background: var(--gray-100);
+    font-weight: 700;
+    color: var(--gray);
+    font-size: 0.85rem;
+    text-align: start;
+    width: 160px;
+    min-width: 160px;
+    max-width: 160px;
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 5;
+    border-inline-end: 2px solid var(--gray-300);
+}
+.compare-table tbody tr:nth-child(even) td.compare-label {
+    background: #e8ecf1;
+}
+.compare-table tbody tr:nth-child(even) td:not(.compare-label) {
+    background: var(--gray-50);
+}
+.compare-value.price {
+    color: var(--success);
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+.compare-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.compare-actions .btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
 }
 .compare-bar {
     display: flex;
@@ -1221,6 +1267,21 @@ textarea.form-input { resize: vertical; min-height: 80px; }
     font-size: 0.9rem;
     color: var(--gray);
     font-weight: 600;
+}
+/* Scrollbar styling for compare wrapper */
+.compare-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+.compare-wrapper::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 4px;
+}
+.compare-wrapper::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: 4px;
+}
+.compare-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
 }
 
 /* ==================== PRINT STYLES ==================== */
