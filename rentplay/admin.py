@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Q, Count
 
 from .models import (
-    User, Agency, Property, PropertyVideo,
+    User, Agency, Property, PropertyImage, PropertyVideo,
     PropertyType, City, District, Booking, Review, Wishlist,
     Message, Notification, Waitlist, Contract, Banner
 )
