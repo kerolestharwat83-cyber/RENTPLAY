@@ -17,11 +17,13 @@
   <div class="detail-grid">
     <div class="detail-main">
       <div class="detail-gallery" id="galleryArea">
-        {% if property.main_image %}
-        <img src="{{ property.main_image }}" alt="{{ property.title }}" id="mainGalleryImage" loading="eager" style="transition: opacity 0.3s ease; display: block;">
-        {% else %}
-        <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" alt="{{ property.title }}" id="mainGalleryImage" loading="eager" style="transition: opacity 0.3s ease; display: block;">
-        {% endif %}
+        <div class="gallery-main-media" style="position:relative;width:100%;height:100%;">
+          <img src="{{ property.main_image|default:'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800' }}" alt="{{ property.title }}" id="mainGalleryImage" loading="eager" style="transition: opacity 0.3s ease; display: block; width:100%;height:100%;object-fit:cover;">
+          <video id="mainGalleryVideo" style="display:none;width:100%;height:100%;object-fit:cover;background:#000;" controls playsinline preload="metadata">
+            <source src="" type="video/mp4">
+            متصفحك لا يدعم تشغيل الفيديو.
+          </video>
+        </div>
 
         <div class="gallery-controls">
           <button class="gallery-btn" type="button" onclick="prevMedia()"><i class="fas fa-chevron-right"></i></button>
@@ -310,7 +312,15 @@
     var item = mediaItems[index];
     if (!item) return;
     var mainImg = document.getElementById('mainGalleryImage');
-    if (mainImg && item.type === 'image' && item.src) {
+    var mainVid = document.getElementById('mainGalleryVideo');
+    if (item.type === 'video' && mainVid) {
+      if (mainImg) mainImg.style.display = 'none';
+      mainVid.style.display = 'block';
+      mainVid.querySelector('source').src = item.src;
+      mainVid.load();
+      mainVid.play().catch(function(){});
+    } else if (mainImg && item.src) {
+      if (mainVid) { mainVid.style.display = 'none'; mainVid.pause(); }
       mainImg.style.opacity = '0.4';
       setTimeout(function() {
         mainImg.src = item.src;
