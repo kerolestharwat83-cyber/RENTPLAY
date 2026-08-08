@@ -139,35 +139,7 @@
     {% for property in page_obj %}
     <div class="property-card animate-fade {% if property.status == 'rented' %}property-rented{% endif %}" style="animation-delay:{{ forloop.counter0|add:3 }}00ms">
       <div class="property-image-wrap" style="cursor:pointer;" onclick="openGallery({{ property.id }});">
-        <div class="card-slider" id="cardSlider{{ property.id }}">
-          <div class="card-slider-track" id="track{{ property.id }}">
-            {% with all_images=property.images.all %}
-            {% for img in all_images %}
-            <div class="card-slide{% if forloop.first %} active{% endif %}" data-slide="{{ forloop.counter0 }}">
-              <img src="{{ img.image.url }}" class="property-image" alt="{{ property.title }}" loading="lazy" onerror="this.src='{% static 'images/rentplay_logo.png' %}'">
-            </div>
-            {% endfor %}
-            {% with video=property.videos.first %}
-            {% if video and video.video %}
-            <div class="card-slide{% if not all_images %} active{% endif %}" data-slide="{{ all_images|length }}">
-              <video class="property-video-card" muted playsinline preload="metadata" poster="{% static 'images/rentplay_logo.png' %}" data-src="{{ video.video.url }}" onclick="event.stopPropagation(); toggleCardVideo(this);">
-                <source src="{{ video.video.url }}" type="video/mp4">
-              </video>
-              <div class="card-video-play"><i class="fas fa-play"></i></div>
-            </div>
-            {% endif %}
-            {% endwith %}
-            {% if not all_images and not property.videos.first %}
-            <div class="card-slide active" data-slide="0">
-              <img src="{% static 'images/rentplay_logo.png' %}" class="property-image" alt="{{ property.title }}">
-            </div>
-            {% endif %}
-            {% endwith %}
-          </div>
-          <button class="card-slider-btn card-slider-prev" type="button" data-slider="cardSlider{{ property.id }}"><i class="fas fa-chevron-{% if True %}right{% else %}left{% endif %}"></i></button>
-          <button class="card-slider-btn card-slider-next" type="button" data-slider="cardSlider{{ property.id }}"><i class="fas fa-chevron-{% if True %}left{% else %}right{% endif %}"></i></button>
-          <div class="card-slider-dots" id="dots{{ property.id }}"></div>
-        </div>
+        <img src="{% static 'images/rentplay_logo.png' %}" class="property-image" alt="{{ property.title }}" loading="lazy">
         <div class="property-image-overlay"></div>
         {% if property.status == 'available' %}
         <span class="property-badge badge-available">متاح</span>
