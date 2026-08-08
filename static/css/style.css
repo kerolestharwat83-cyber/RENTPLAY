@@ -268,6 +268,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 .badge-danger { background: var(--danger-light); color: var(--danger); }
 .badge-info { background: var(--primary-light); color: var(--primary); }
 .badge-secondary { background: var(--gray-100); color: var(--gray); }
+.badge-furnished { background: rgba(139, 92, 246, 0.9); position: absolute; top: 1rem; left: 1rem; right: auto; }
 .property-image-title { position: absolute; bottom: 1rem; right: 1.25rem; left: 1.25rem; color: white; font-size: 1.15rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 .property-image-counter { position: absolute; top: 1rem; left: 1rem; background: rgba(0,0,0,0.6); color: white; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
 .property-unit-code { position: absolute; top: 3.5rem; left: 1rem; background: rgba(79, 70, 229, 0.9); color: white; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; z-index: 2; }
@@ -1401,10 +1402,6 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 }
 
 /* ==================== FURNISHED BADGE ==================== */
-.badge-furnished {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    color: white;
-}
 .furnished-badge {
     display: inline-flex;
     align-items: center;
