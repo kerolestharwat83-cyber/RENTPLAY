@@ -159,16 +159,11 @@
         <div class="property-image-title">{{ property.title }}</div>
       </div>
       <div class="property-body">
-        <div class="property-top-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-          <div class="property-price" style="margin:0;text-align:left;">
+        <div class="property-price">
             <span class="price-annual">{{ property.price_annual|intcomma }} ريال/سنة</span>
             {% if property.price %}
             <span class="price-monthly">{{ property.price|intcomma }} ريال/شهر</span>
             {% endif %}
-          </div>
-          <div class="property-rooms-count" style="font-size:1.25rem;font-weight:800;color:var(--primary);white-space:nowrap;">
-            <i class="fas fa-bed"></i> {{ property.rooms }} غرف
-          </div>
         </div>
         <div class="property-meta-row">
           <div class="property-meta"><i class="fas fa-city icon-city"></i> {{ property.city|default:"-" }}</div>
@@ -181,6 +176,7 @@
         {% endif %}
         <div class="property-meta-row">
           <div class="property-meta"><i class="fas fa-home icon-tag"></i> {{ property.property_type|default:"-" }}</div>
+          <div class="property-meta" style="font-weight:700;color:var(--primary);"><i class="fas fa-bed"></i> {{ property.rooms }} غرف</div>
         </div>
         <div class="property-features">
           {% for feature in property.feature_list|slice:":4" %}<span class="feature-tag">{{ feature }}</span>{% endfor %}
