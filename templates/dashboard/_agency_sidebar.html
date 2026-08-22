@@ -1,0 +1,26 @@
+{% load i18n %}{% load humanize %}
+<aside class="dashboard-sidebar" id="dashboardSidebar">
+  <div class="dashboard-sidebar-header">
+    <div class="logo-icon"><i class="fas fa-building"></i></div>
+    <div class="dashboard-sidebar-logo">{% if agency %}{{ agency.name|truncatechars:15 }}{% else %}RENTPLAY{% endif %}</div>
+    <button class="sidebar-close" onclick="toggleDashboardSidebar()"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="dashboard-sidebar-nav">
+    <a href="{% url 'rentplay:dashboard' %}" class="dashboard-sidebar-item{% if sidebar_active == 'dashboard' %} active{% endif %}"><i class="fas fa-chart-pie"></i> لوحة التحكم</a>
+    <a href="{% url 'rentplay:dashboard_properties' %}" class="dashboard-sidebar-item{% if sidebar_active == 'properties' %} active{% endif %}"><i class="fas fa-building"></i> الوحدات</a>
+    <a href="{% url 'rentplay:dashboard_bookings' %}" class="dashboard-sidebar-item{% if sidebar_active == 'bookings' %} active{% endif %}"><i class="fas fa-calendar-check"></i> الحجوزات{% if stats.new_bookings > 0 %}<span class="badge-count badge-danger">{{ stats.new_bookings }}</span>{% endif %}</a>
+    <a href="{% url 'rentplay:property_create' %}" class="dashboard-sidebar-item{% if sidebar_active == 'create' %} active{% endif %}"><i class="fas fa-plus-circle"></i> إضافة وحدة</a>
+    <a href="{% url 'rentplay:message_list' %}" class="dashboard-sidebar-item{% if sidebar_active == 'messages' %} active{% endif %}"><i class="fas fa-envelope"></i> الرسائل</a>
+    <a href="{% url 'rentplay:notification_list' %}" class="dashboard-sidebar-item{% if sidebar_active == 'notifications' %} active{% endif %}"><i class="fas fa-bell"></i> الإشعارات{% if unread_notifications > 0 %}<span class="badge-count badge-danger">{{ unread_notifications }}</span>{% endif %}</a>
+  </nav>
+  <div class="dashboard-sidebar-footer">
+    <div class="dashboard-sidebar-user">
+      <div class="dashboard-sidebar-avatar"><i class="fas fa-user"></i></div>
+      <div class="dashboard-sidebar-user-info">
+        <div>{{ user.get_full_name|default:user.username }}</div>
+        <span>مدير الوكالة</span>
+      </div>
+    </div>
+  </div>
+</aside>
+<div class="dashboard-overlay" id="dashboardOverlay" onclick="toggleDashboardSidebar()"></div>

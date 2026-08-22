@@ -1,0 +1,184 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}من نحن - اتصل بنا - RENTPLAY{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<section class="hero animate-fade" style="margin-bottom: 2rem;">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <i class="fas fa-info-circle"></i> معلومات عن المنصة
+    </div>
+    <h1>من نحن &middot; اتصل بنا</h1>
+    <p>تعرف على رينت بلاي وتواصل مع فريق الدعم الفني</p>
+  </div>
+</section>
+
+<!-- Two Column Layout -->
+<div class="about-contact-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
+
+  <!-- Section 1: About Platform -->
+  {% if about_page and about_page.about_content %}
+  <section class="animate-fade" style="animation-delay: 0.1s;">
+    <div class="detail-info-card" style="height: 100%;">
+      <div class="detail-header" style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 0.75rem;">
+          <i class="fas fa-building" style="color: var(--primary);"></i>
+          {{ about_page.about_title|default:"عن رينت بلاي" }}
+        </h2>
+      </div>
+      <div class="about-content" style="color: var(--dark-700); line-height: 1.8; font-size: 0.95rem;">
+        {{ about_page.about_content|safe|linebreaks }}
+      </div>
+    </div>
+  </section>
+  {% else %}
+  <section class="animate-fade" style="animation-delay: 0.1s;">
+    <div class="detail-info-card empty-state" style="height: 100%; padding: 3rem 1.5rem;">
+      <i class="fas fa-file-alt" style="font-size: 3rem; color: var(--gray-200); margin-bottom: 1rem;"></i>
+      <h3 style="font-size: 1.1rem; color: var(--dark-700); margin-bottom: 0.5rem;">نبذة عن المنصة</h3>
+      <p style="color: var(--gray);">سيتم إضافة المحتوى قريباً</p>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Section 2: Contact / Support -->
+  <section class="animate-fade" style="animation-delay: 0.2s;">
+    <div class="detail-info-card" style="height: 100%;">
+      <div class="detail-header" style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 0.75rem;">
+          <i class="fas fa-headset" style="color: var(--primary);"></i>
+          الدعم الفني
+        </h2>
+      </div>
+
+      <!-- Contact Info Cards -->
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+
+        {% if about_page and about_page.support_email %}
+        <a href="mailto:{{ about_page.support_email }}" class="contact-info-row" style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; background: var(--gray-100); border-radius: 12px; transition: all 0.3s; text-decoration: none; color: inherit;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--gray); font-weight: 600;">البريد الإلكتروني</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark); direction: ltr; text-align: right;">{{ about_page.support_email }}</div>
+          </div>
+        </a>
+        {% endif %}
+
+        {% if about_page and about_page.support_phone %}
+        <a href="tel:{{ about_page.support_phone }}" class="contact-info-row" style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; background: var(--gray-100); border-radius: 12px; transition: all 0.3s; text-decoration: none; color: inherit;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+            <i class="fas fa-phone"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--gray); font-weight: 600;">رقم الهاتف</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark); direction: ltr; text-align: right;">{{ about_page.support_phone }}</div>
+          </div>
+        </a>
+        {% endif %}
+
+        {% if about_page and about_page.support_whatsapp %}
+        <a href="https://wa.me/{{ about_page.support_whatsapp }}" target="_blank" rel="noopener" class="contact-info-row" style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; background: var(--gray-100); border-radius: 12px; transition: all 0.3s; text-decoration: none; color: inherit;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: #d1fae5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+            <i class="fab fa-whatsapp"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--gray); font-weight: 600;">واتساب</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark); direction: ltr; text-align: right;">{{ about_page.support_whatsapp }}</div>
+          </div>
+        </a>
+        {% endif %}
+
+      </div>
+
+      <!-- Contact Form -->
+      {% if about_page and about_page.show_contact_form %}
+      <div class="contact-form-wrap" style="border-top: 1px dashed var(--gray-200); padding-top: 1.5rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-paper-plane" style="color: var(--primary);"></i>
+          أرسل لنا رسالة
+        </h3>
+
+        {% if contact_success %}
+        <div class="alert alert-success" style="margin-bottom: 1rem;">
+          <i class="fas fa-check-circle"></i> تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.
+        </div>
+        {% endif %}
+
+        <form method="post" action="" class="contact-form">
+          {% csrf_token %}
+
+          <div class="form-row" style="margin-bottom: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-user"></i> الاسم <span style="color: var(--danger);">*</span>
+              </label>
+              <input type="text" name="name" class="form-input" placeholder="الاسم الكامل" value="{{ contact_form_data.name|default:'' }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-envelope"></i> البريد الإلكتروني <span style="color: var(--danger);">*</span>
+              </label>
+              <input type="email" name="email" class="form-input" placeholder="example@email.com" value="{{ contact_form_data.email|default:'' }}" required style="direction: ltr; text-align: right;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label">
+              <i class="fas fa-phone"></i> رقم الجوال <span style="color: var(--gray); font-weight: 400;">(اختياري)</span>
+            </label>
+            <input type="tel" name="phone" class="form-input" placeholder="05xxxxxxxx" value="{{ contact_form_data.phone|default:'' }}" style="direction: ltr; text-align: right;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label">
+              <i class="fas fa-comment-alt"></i> الرسالة <span style="color: var(--danger);">*</span>
+            </label>
+            <textarea name="message" class="form-input" placeholder="اكتب رسالتك هنا..." rows="4" required>{{ contact_form_data.message|default:'' }}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i class="fas fa-paper-plane"></i> إرسال الرسالة
+          </button>
+        </form>
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.contact-info-row:hover {
+  background: var(--primary-light) !important;
+  transform: translateX(-4px);
+}
+
+@media (max-width: 1024px) {
+  .about-contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-form-wrap .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
