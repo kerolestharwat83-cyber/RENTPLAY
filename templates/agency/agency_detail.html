@@ -133,7 +133,7 @@
       </div>
       <div class="property-card-actions">
         <a href="{{ property.get_absolute_url }}" class="pca-btn pca-details"><i class="fas fa-eye"></i><span>التفاصيل</span></a>
-        <a href="{% url 'rentplay:property_update' property.pk %}" class="pca-btn pca-edit"><i class="fas fa-edit"></i><span>تعديل</span></a>
+        <a href="{% url 'rentplay:property_edit' property.pk %}" class="pca-btn pca-edit"><i class="fas fa-edit"></i><span>تعديل</span></a>
         <a href="{% url 'rentplay:property_delete' property.pk %}" class="pca-btn pca-delete" onclick="return confirm('هل أنت متأكد من حذف هذا العقار؟');"><i class="fas fa-trash"></i><span>حذف</span></a>
         <button type="button" class="pca-btn pca-toggle" onclick="togglePropertyStatus({{ property.pk }})"><i class="fas fa-sync-alt"></i><span>تغيير الحالة</span></button>
         <a href="{% url 'rentplay:property_compare_add' property.id %}" class="pca-btn pca-compare"><i class="fas fa-balance-scale"></i><span>مقارنة</span></a>
