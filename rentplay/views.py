@@ -11,7 +11,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Count, Avg
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from django.urls import reverse
-from django.utils.translation import gettext_lazy as _, activate
+from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.cache import cache
@@ -216,8 +217,8 @@ def index(request):
             'hero_banners': hero_banners,
             'cities': City.objects.all(),
             'property_types': PropertyType.objects.all(),
-            'seo_title': _('RENTPLAY - Real Estate Marketplace'),
-            'seo_description': _('Find your perfect home in Saudi Arabia. Browse properties from top real estate agencies.'),
+            'seo_title': gettext_lazy('RENTPLAY - Real Estate Marketplace'),
+            'seo_description': gettext_lazy('Find your perfect home in Saudi Arabia. Browse properties from top real estate agencies.'),
         }
         cache.set(cache_key, context, 300)
     else:
@@ -262,8 +263,8 @@ def agency_list(request):
     page_obj = paginator.get_page(request.GET.get('page'))
     return render(request, 'agency/agency_list.html', {
         'page_obj': page_obj,
-        'seo_title': _('Real Estate Agencies'),
-        'seo_description': _('Browse trusted real estate agencies in Saudi Arabia.'),
+        'seo_title': gettext_lazy('Real Estate Agencies'),
+        'seo_description': gettext_lazy('Browse trusted real estate agencies in Saudi Arabia.'),
     })
 
 
@@ -306,7 +307,7 @@ def agency_detail(request, agency_slug):
             'rented': agency.rented_count,
         },
         'reviews': reviews,
-        'seo_title': f"{agency.name} - {_('Properties')}",
+        'seo_title': f"{agency.name} - {gettext_lazy('Properties')}",
         'seo_description': agency.description[:160] if agency.description else '',
         # New agency fields (v7.4)
         'office_address': agency.office_address,
@@ -469,7 +470,7 @@ def property_share(request, pk):
 # ==================== ABOUT US PAGE ====================
 def about_us(request):
     """About Us / Contact Us page. Shows AboutPage singleton + contact form."""
-    about_page, _ = AboutPage.objects.get_or_create(pk=1)
+    about_page, _created = AboutPage.objects.get_or_create(pk=1)
 
     contact_success = False
     if request.method == 'POST':
@@ -501,7 +502,7 @@ def about_us(request):
         'about_page': about_page,
         'contact_success': contact_success,
         'seo_title': about_page.about_title,
-        'seo_description': _('Contact RENTPLAY - Saudi real estate marketplace'),
+        'seo_description': gettext_lazy('Contact RENTPLAY - Saudi real estate marketplace'),
     })
 
 
@@ -511,7 +512,7 @@ def agency_about(request, agency_slug):
     agency = get_object_or_404(Agency, slug=agency_slug, status=Agency.Status.ACTIVE)
     return render(request, 'agency/agency_about.html', {
         'agency': agency,
-        'seo_title': f"{_('About')} {agency.name}",
+        'seo_title': f"{gettext_lazy('About')} {agency.name}",
         'seo_description': agency.about[:160] if agency.about else agency.description[:160] if agency.description else '',
     })
 
@@ -529,7 +530,7 @@ def property_report(request):
     if not property_id or not reporter_name or not reporter_phone or not message:
         return JsonResponse({
             'success': False,
-            'error': _('Property ID, name, phone, and message are required.')
+            'error': gettext_lazy('Property ID, name, phone, and message are required.')
         }, status=400)
 
     try:
@@ -537,7 +538,7 @@ def property_report(request):
     except Property.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'error': _('Property not found.')
+            'error': gettext_lazy('Property not found.')
         }, status=404)
 
     PropertyReport.objects.create(
@@ -550,7 +551,7 @@ def property_report(request):
 
     return JsonResponse({
         'success': True,
-        'message': _('Report submitted successfully. Thank you for helping us keep the platform safe.')
+        'message': gettext_lazy('Report submitted successfully. Thank you for helping us keep the platform safe.')
     })
 
 
@@ -559,7 +560,7 @@ def property_compare(request):
     """Compare up to 3 properties"""
     compare_ids = request.session.get('compare_ids', [])
     if not compare_ids:
-        messages.info(request, _('Select properties to compare.'))
+        messages.info(request, gettext_lazy('Select properties to compare.'))
         return redirect('rentplay:index')
 
     properties = Property.objects.filter(
@@ -567,12 +568,12 @@ def property_compare(request):
     ).select_related('agency', 'property_type', 'city', 'district').prefetch_related('images')
 
     if properties.count() < 2:
-        messages.info(request, _('Select at least 2 properties to compare.'))
+        messages.info(request, gettext_lazy('Select at least 2 properties to compare.'))
         return redirect('rentplay:index')
 
     return render(request, 'properties/property_compare.html', {
         'properties': properties,
-        'seo_title': _('Compare Properties'),
+        'seo_title': gettext_lazy('Compare Properties'),
     })
 
 
@@ -582,13 +583,13 @@ def property_compare_add(request, property_pk):
     property_pk = int(property_pk)
 
     if property_pk in compare_ids:
-        messages.info(request, _('Property already in compare list.'))
+        messages.info(request, gettext_lazy('Property already in compare list.'))
     elif len(compare_ids) >= 3:
-        messages.warning(request, _('You can compare up to 3 properties. Remove one first.'))
+        messages.warning(request, gettext_lazy('You can compare up to 3 properties. Remove one first.'))
     else:
         compare_ids.append(property_pk)
         request.session['compare_ids'] = compare_ids
-        messages.success(request, _('Property added to compare.'))
+        messages.success(request, gettext_lazy('Property added to compare.'))
 
     return redirect(request.META.get('HTTP_REFERER', 'rentplay:index'))
 
@@ -695,20 +696,20 @@ def submit_booking(request, property_pk):
             create_notification(
                 property_obj.agency.admin,
                 Notification.Type.BOOKING,
-                _('New Booking'),
-                _('New booking for') + f' {property_obj.title}',
+                gettext_lazy('New Booking'),
+                gettext_lazy('New booking for') + f' {property_obj.title}',
                 f'/dashboard/bookings/'
             )
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': True,
-                'message': _('Your booking has been submitted successfully! The agency will contact you soon.'),
+                'message': gettext_lazy('Your booking has been submitted successfully! The agency will contact you soon.'),
                 'booking_id': booking.pk,
                 'agency_name': booking.agency.name,
             })
 
-        messages.success(request, _('Your booking has been submitted successfully!'))
+        messages.success(request, gettext_lazy('Your booking has been submitted successfully!'))
         return redirect('rentplay:property_detail', pk=property_pk)
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -720,7 +721,7 @@ def submit_booking(request, property_pk):
             'non_field_errors': [str(e) for e in non_field] if non_field else []
         }, status=400)
 
-    messages.error(request, _('Please correct the errors below.'))
+    messages.error(request, gettext_lazy('Please correct the errors below.'))
     return redirect('rentplay:property_detail', pk=property_pk)
 
 
@@ -786,7 +787,7 @@ def profile(request):
 def dashboard(request):
     user = request.user
     if not user.can_access_admin():
-        return HttpResponseForbidden(_('You do not have access to the dashboard.'))
+        return HttpResponseForbidden(gettext_lazy('You do not have access to the dashboard.'))
 
     if user.is_superadmin:
         context = _get_superadmin_dashboard(request)
@@ -797,7 +798,7 @@ def dashboard(request):
     if user.is_agency_staff:
         context = _get_agency_staff_dashboard(request)
         return render(request, 'dashboard/staff_dashboard.html', context)
-    return HttpResponseForbidden(_('Access denied.'))
+    return HttpResponseForbidden(gettext_lazy('Access denied.'))
 
 
 def _get_superadmin_dashboard(request):
@@ -821,7 +822,7 @@ def _get_superadmin_dashboard(request):
 def _get_agency_admin_dashboard(request):
     agency = request.user.agency
     if not agency:
-        messages.error(request, _('You are not assigned to any agency.'))
+        messages.error(request, gettext_lazy('You are not assigned to any agency.'))
         return redirect('rentplay:index')
     properties = Property.objects.filter(agency=agency)
     bookings = Booking.objects.filter(agency=agency)
@@ -846,7 +847,7 @@ def _get_agency_admin_dashboard(request):
 def _get_agency_staff_dashboard(request):
     agency = request.user.agency
     if not agency:
-        messages.error(request, _('You are not assigned to any agency.'))
+        messages.error(request, gettext_lazy('You are not assigned to any agency.'))
         return redirect('rentplay:index')
     properties = Property.objects.filter(agency=agency)
     bookings = Booking.objects.filter(agency=agency)
@@ -922,7 +923,7 @@ def booking_update_status(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
     user = request.user
     if not user.is_superadmin and (not user.agency or booking.agency != user.agency):
-        return JsonResponse({'success': False, 'error': _('Permission denied.')}, status=403)
+        return JsonResponse({'success': False, 'error': gettext_lazy('Permission denied.')}, status=403)
     if request.method == 'POST':
         new_status = request.POST.get('status')
         if new_status in [s[0] for s in Booking.Status.choices]:
@@ -931,11 +932,11 @@ def booking_update_status(request, pk):
             booking.save()
             return JsonResponse({
                 'success': True,
-                'message': _('Status updated.'),
+                'message': gettext_lazy('Status updated.'),
                 'status': booking.get_status_display(),
                 'status_code': booking.status
             })
-    return JsonResponse({'success': False, 'error': _('Invalid request.')}, status=400)
+    return JsonResponse({'success': False, 'error': gettext_lazy('Invalid request.')}, status=400)
 
 
 @login_required
@@ -1028,7 +1029,7 @@ def delete_property_video(request, video_pk):
     if not user.is_superadmin and prop.agency != user.agency:
         return HttpResponseForbidden()
     vid.delete()
-    messages.success(request, _('Video deleted successfully.'))
+    messages.success(request, gettext_lazy('Video deleted successfully.'))
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
     return redirect(request.META.get('HTTP_REFERER', 'rentplay:dashboard_properties'))
@@ -1068,8 +1069,8 @@ def wishlist_toggle(request, property_pk):
     )
     if not created:
         wishlist_item.delete()
-        return JsonResponse({'success': True, 'added': False, 'message': _('Removed from wishlist.')})
-    return JsonResponse({'success': True, 'added': True, 'message': _('Added to wishlist.')})
+        return JsonResponse({'success': True, 'added': False, 'message': gettext_lazy('Removed from wishlist.')})
+    return JsonResponse({'success': True, 'added': True, 'message': gettext_lazy('Added to wishlist.')})
 
 
 @login_required
@@ -1101,14 +1102,14 @@ def review_create(request, property_pk):
             create_notification(
                 property_obj.agency.admin,
                 Notification.Type.REVIEW,
-                _('New Review'),
-                f'{request.user.username} ' + _('reviewed') + f' {property_obj.title}',
+                gettext_lazy('New Review'),
+                f'{request.user.username} ' + gettext_lazy('reviewed') + f' {property_obj.title}',
                 property_obj.get_absolute_url()
             )
 
-        messages.success(request, _('Review submitted and pending approval.'))
+        messages.success(request, gettext_lazy('Review submitted and pending approval.'))
     else:
-        messages.error(request, _('Please correct the errors.'))
+        messages.error(request, gettext_lazy('Please correct the errors.'))
     return redirect('rentplay:property_detail', pk=property_pk)
 
 
@@ -1172,14 +1173,14 @@ def message_send(request, user_id):
         create_notification(
             receiver,
             Notification.Type.MESSAGE,
-            _('New Message'),
+            gettext_lazy('New Message'),
             f'{request.user.username}: {msg.content[:50]}',
             f'/messages/'
         )
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'success': True, 'message': _('Message sent.')})
-        messages.success(request, _('Message sent.'))
+            return JsonResponse({'success': True, 'message': gettext_lazy('Message sent.')})
+        messages.success(request, gettext_lazy('Message sent.'))
     return redirect('rentplay:message_conversation', user_id=user_id)
 
 
@@ -1272,7 +1273,7 @@ def map_search(request):
 
     return render(request, 'properties/map_search.html', {
         'properties_json': properties_data,
-        'seo_title': _('Map Search'),
+        'seo_title': gettext_lazy('Map Search'),
     })
 
 
