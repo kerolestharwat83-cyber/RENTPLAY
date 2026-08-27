@@ -1,9 +1,41 @@
-# This file mirrors the auto-generated migration created on the production server.
-# Removed all AlterUniqueTogether calls because they fail when the constraint
-# doesn't actually exist on the DB. The AddConstraint operations below are enough.
+# Fixed for RENTPLAY v7.5 — handles existing constraints gracefully.
 
 from django.db import migrations, models
 import django.core.validators
+
+
+def add_constraint_if_not_exists(apps, schema_editor, model_name, fields, constraint_name):
+    """Add a UniqueConstraint only if it doesn't already exist in PostgreSQL."""
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT conname FROM pg_constraint
+            WHERE conname = %s AND conrelid = (
+                SELECT oid FROM pg_class WHERE relname = %s
+            )
+        """, [constraint_name, 'rentplay_' + model_name])
+        if not cursor.fetchone():
+            # Constraint doesn't exist — create it via SQL
+            field_list = ', '.join(fields)
+            cursor.execute(
+                f'ALTER TABLE rentplay_{model_name} ADD CONSTRAINT {constraint_name} UNIQUE ({field_list})'
+            )
+
+
+def add_district_constraint(apps, schema_editor):
+    add_constraint_if_not_exists(apps, schema_editor, 'district', ['city_id', 'name'], 'unique_district_per_city')
+
+
+def add_property_constraint(apps, schema_editor):
+    add_constraint_if_not_exists(apps, schema_editor, 'property', ['agency_id', 'title'], 'unique_property_title_per_agency')
+
+
+def add_review_constraint(apps, schema_editor):
+    add_constraint_if_not_exists(apps, schema_editor, 'review', ['user_id', 'property_unit_id'], 'unique_review_per_user_property')
+
+
+def add_wishlist_constraint(apps, schema_editor):
+    add_constraint_if_not_exists(apps, schema_editor, 'wishlist', ['user_id', 'property_unit_id'], 'unique_wishlist_per_user_property')
 
 
 class Migration(migrations.Migration):
@@ -46,20 +78,10 @@ class Migration(migrations.Migration):
             name='price_weekly',
             field=models.DecimalField(blank=True, decimal_places=2, max_digits=12, null=True, validators=[django.core.validators.MinValueValidator(0)], verbose_name='\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0623\u0633\u0628\u0648\u0639\u064a (\u0631\u064a\u0627\u0644)'),
         ),
-        migrations.AddConstraint(
-            model_name='district',
-            constraint=models.UniqueConstraint(fields=('city', 'name'), name='unique_district_per_city'),
-        ),
-        migrations.AddConstraint(
-            model_name='property',
-            constraint=models.UniqueConstraint(fields=('agency', 'title'), name='unique_property_title_per_agency'),
-        ),
-        migrations.AddConstraint(
-            model_name='review',
-            constraint=models.UniqueConstraint(fields=('user', 'property_unit'), name='unique_review_per_user_property'),
-        ),
-        migrations.AddConstraint(
-            model_name='wishlist',
-            constraint=models.UniqueConstraint(fields=('user', 'property_unit'), name='unique_wishlist_per_user_property'),
-        ),
+        # Use RunPython with existence checks instead of raw AddConstraint
+        # because the constraints may already exist from a previous partial run.
+        migrations.RunPython(add_district_constraint, migrations.RunPython.noop),
+        migrations.RunPython(add_property_constraint, migrations.RunPython.noop),
+        migrations.RunPython(add_review_constraint, migrations.RunPython.noop),
+        migrations.RunPython(add_wishlist_constraint, migrations.RunPython.noop),
     ]
