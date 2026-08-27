@@ -1,5 +1,6 @@
-# This file mirrors the auto-generated migration created on the production server
-# (makemigrations on server). Kept here so fresh deploys stay consistent.
+# This file mirrors the auto-generated migration created on the production server.
+# Removed all AlterUniqueTogether calls because they fail when the constraint
+# doesn't actually exist on the DB. The AddConstraint operations below are enough.
 
 from django.db import migrations, models
 import django.core.validators
@@ -19,26 +20,6 @@ class Migration(migrations.Migration):
         migrations.AlterModelOptions(
             name='property',
             options={'ordering': ['-is_featured', 'status', '-created_at'], 'verbose_name': '\u0648\u062d\u062f\u0629 \u0633\u0643\u0646\u064a\u0629', 'verbose_name_plural': '\u0648\u062d\u062f\u0627\u062a \u0633\u0643\u0646\u064a\u0629'},
-        ),
-        migrations.AlterUniqueTogether(
-            name='district',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='property',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='review',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='waitlist',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='wishlist',
-            unique_together=set(),
         ),
         migrations.AlterField(
             model_name='banner',
