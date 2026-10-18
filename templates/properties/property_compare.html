@@ -1,0 +1,206 @@
+{% extends 'base/base.html' %}
+{% load static humanize %}
+
+{% block title %}مقارنة الوحدات - RENTPLAY{% endblock %}
+
+{% block content %}
+
+<section class="hero animate-fade" style="padding:2rem;">
+  <div class="hero-content">
+    <h1><i class="fas fa-balance-scale"></i> مقارنة الوحدات</h1>
+    <p>قارن بين 3 وحدات كحد أقصى</p>
+  </div>
+</section>
+
+{% if properties %}
+<div class="compare-bar animate-fade">
+  <span class="compare-count">{{ properties|length }} وحدات محددة</span>
+  <a href="{% url 'rentplay:index' %}" class="btn btn-secondary btn-sm"><i class="fas fa-plus"></i> إضافة المزيد</a>
+  <a href="{% url 'rentplay:index' %}" class="btn btn-danger btn-sm" onclick="sessionStorage.removeItem('compare_ids');"><i class="fas fa-trash"></i> مسح الكل</a>
+</div>
+
+<div class="compare-wrapper compare-count-{{ compare_col_count }} animate-fade" style="animation-delay:0.1s">
+  <table class="compare-table compare-table-fixed">
+    <colgroup>
+      <col class="cmp-col-label">
+      {% for prop in properties %}<col class="cmp-col-prop">{% endfor %}
+    </colgroup>
+    <!-- Header -->
+    <thead>
+      <tr>
+        <th class="compare-label-header">الميزة</th>
+        {% for prop in properties %}
+        <th class="compare-property-header">
+          <div class="compare-prop-img">
+            {% if prop.main_image %}<img src="{{ prop.main_image }}" alt="{{ prop.title }}" onerror="this.style.display='none'">{% else %}<div class="compare-prop-img-empty"><i class="fas fa-building"></i></div>{% endif %}
+          </div>
+          <h3>{{ prop.title }}</h3>
+          <a href="{% url 'rentplay:property_compare_remove' prop.id %}" class="cmp-remove-btn" title="حذف من المقارنة"><i class="fas fa-times"></i> حذف</a>
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Listing Type -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-tag"></i> نوع العرض</td>
+        {% for prop in properties %}<td class="compare-value"><span class="badge {% if prop.listing_type == 'sale' %}badge-danger{% elif prop.listing_type == 'both' %}badge-purple{% else %}badge-info{% endif %}">{{ prop.get_listing_type_display }}</span></td>{% endfor %}
+      </tr>
+      <!-- Sale Price -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-hand-holding-usd"></i> سعر البيع</td>
+        {% for prop in properties %}<td class="compare-value price">{% if prop.price_sale %}{{ prop.price_sale|intcomma }} <small>ريال</small>{% else %}-{% endif %}</td>{% endfor %}
+      </tr>
+      <!-- Rent Prices -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-tag"></i> أسعار الإيجار</td>
+        {% for prop in properties %}
+        <td class="compare-value">
+          {% if prop.price_daily %}<div><small>يومي:</small> {{ prop.price_daily|intcomma }}</div>{% endif %}
+          {% if prop.price_weekly %}<div><small>أسبوعي:</small> {{ prop.price_weekly|intcomma }}</div>{% endif %}
+          {% if prop.price %}<div><small>شهري:</small> {{ prop.price|intcomma }}</div>{% endif %}
+          {% if prop.price_annual %}<div><small>سنوي:</small> {{ prop.price_annual|intcomma }}</div>{% endif %}
+          {% if not prop.price_daily and not prop.price_weekly and not prop.price and not prop.price_annual %}-{% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      <!-- Status -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-info-circle"></i> الحالة</td>
+        {% for prop in properties %}<td class="compare-value"><span class="badge {% if prop.status == 'available' %}badge-success{% elif prop.status == 'rented' %}badge-danger{% else %}badge-warning{% endif %}">{% if prop.status == 'available' %}متاح{% elif prop.status == 'rented' %}مؤجر{% else %}{{ prop.get_status_display }}{% endif %}</span></td>{% endfor %}
+      </tr>
+      <!-- Type -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-home"></i> النوع</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.property_type|default:"-" }}</td>{% endfor %}
+      </tr>
+      <!-- City -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-city"></i> المدينة</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.city|default:"-" }}</td>{% endfor %}
+      </tr>
+      <!-- District -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-map-marker-alt"></i> الحي</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.district|default:"-" }}</td>{% endfor %}
+      </tr>
+      <!-- Street -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-road"></i> اسم الشارع</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.street_name|default:"-" }}</td>{% endfor %}
+      </tr>
+      <!-- Rooms -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-bed"></i> الغرف</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.rooms }}</td>{% endfor %}
+      </tr>
+      <!-- Bathrooms -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-bath"></i> الحمامات</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.bathrooms|default:"-" }}</td>{% endfor %}
+      </tr>
+      <!-- Area -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-ruler-combined"></i> المساحة</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.area|default:"-" }}{% if prop.area %} م²{% endif %}</td>{% endfor %}
+      </tr>
+      <!-- Floor -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-building"></i> الدور</td>
+        {% for prop in properties %}<td class="compare-value">{{ prop.floor|default:"-" }}</td>{% endfor %}
+      </tr>
+      <!-- Payment -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-money-bill-wave"></i> الدفع</td>
+        {% for prop in properties %}<td class="compare-value">{% if prop.payment_period == 'monthly' %}شهري{% elif prop.payment_period == 'quarterly' %}كل 3 شهور{% elif prop.payment_period == 'four_months' %}كل 4 شهور{% elif prop.payment_period == 'six_months' %}كل 6 شهور{% elif prop.payment_period == 'yearly' %}سنوي{% else %}{{ prop.get_payment_period_display }}{% endif %}</td>{% endfor %}
+      </tr>
+      <!-- Features -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-star"></i> المميزات</td>
+        {% for prop in properties %}<td class="compare-value">{% for f in prop.feature_list %}<span class="feature-tag">{{ f }}</span>{% empty %}-{% endfor %}</td>{% endfor %}
+      </tr>
+      <!-- Agency -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-building"></i> الوكالة</td>
+        {% for prop in properties %}<td class="compare-value"><a href="{{ prop.agency.get_absolute_url }}">{{ prop.agency.name }}</a></td>{% endfor %}
+      </tr>
+      <!-- Actions -->
+      <tr>
+        <td class="compare-label"><i class="fas fa-cog"></i> الإجراءات</td>
+        {% for prop in properties %}
+        <td class="compare-value">
+          <div class="cmp-actions">
+            <a href="{{ prop.get_absolute_url }}" class="cmp-btn cmp-btn-view"><i class="fas fa-eye"></i> عرض الوحدة</a>
+            {% if prop.status == 'available' %}<button type="button" class="cmp-btn cmp-btn-book" onclick="openBookingModal({{ prop.id }});"><i class="fas fa-calendar-check"></i> احجز</button>{% endif %}
+            {% if prop.phone %}<a href="tel:{{ prop.phone }}" class="cmp-btn cmp-btn-call"><i class="fas fa-phone"></i> اتصال</a>{% endif %}
+            {% if prop.whatsapp %}<a href="https://wa.me/{{ prop.whatsapp }}" target="_blank" class="cmp-btn cmp-btn-whatsapp"><i class="fab fa-whatsapp"></i> واتساب</a>{% endif %}
+          </div>
+        </td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state animate-fade">
+  <i class="fas fa-balance-scale"></i>
+  <h3>لا توجد وحدات للمقارنة</h3>
+  <p>تصفح الوحدات وأضفها للمقارنة.</p>
+  <a href="{% url 'rentplay:index' %}" class="btn btn-primary"><i class="fas fa-search"></i> تصفح الوحدات</a>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block extra_js %}
+<script>
+window.openBookingModal = function(propertyId) {
+  fetch('/property/' + propertyId + '/booking-modal/')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.success){
+        var container = document.getElementById('bookingModalContainer');
+        if(!container){
+          container = document.createElement('div');
+          container.id = 'bookingModalContainer';
+          container.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;';
+          document.body.appendChild(container);
+        }
+        container.innerHTML = data.html;
+        container.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+      }
+    });
+};
+window.closeBookingModal = function() {
+  var container = document.getElementById('bookingModalContainer');
+  if(container){
+    container.innerHTML = '';
+    container.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+};
+window.submitBookingModal = function(e) {
+  e.preventDefault();
+  var form = document.getElementById('bookingModalForm');
+  var errorsDiv = document.getElementById('bookingModalErrors');
+  var formData = new FormData(form);
+  fetch(form.action, {
+    method: 'POST',
+    headers: {'X-Requested-With': 'XMLHttpRequest'},
+    body: formData
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(data.success){
+      closeBookingModal();
+      alert(data.message || 'تم إرسال الحجز بنجاح!');
+    } else {
+      errorsDiv.style.display = 'block';
+      errorsDiv.textContent = data.error || 'حدث خطأ. تأكد من البيانات.';
+    }
+  }).catch(function(){
+    errorsDiv.style.display = 'block';
+    errorsDiv.textContent = 'حدث خطأ في الاتصال.';
+  });
+};
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeBookingModal(); });
+</script>
+{% endblock %}
