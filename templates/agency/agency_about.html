@@ -1,0 +1,196 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}لمحة عن {{ agency.name }} - RENTPLAY{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb animate-fade">
+  <a href="{% url 'rentplay:index' %}"><i class="fas fa-home"></i> الرئيسية</a>
+  <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+  <a href="{% url 'rentplay:agency_list' %}">الوكالات</a>
+  <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+  <a href="{{ agency.get_absolute_url }}">{{ agency.name }}</a>
+  <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+  <span>لمحة عن الوكالة</span>
+</nav>
+
+<!-- Agency About Header Card -->
+<section class="agency-header animate-fade" style="margin-bottom: 1.5rem;">
+  <div class="agency-header-content">
+    <div class="agency-logo-large">
+      {% if agency.logo %}
+        <img src="{{ agency.logo.url }}" alt="{{ agency.name }}">
+      {% else %}
+        <div class="agency-logo-placeholder">
+          <i class="fas fa-building"></i>
+        </div>
+      {% endif %}
+    </div>
+    <div class="agency-info-header" style="flex: 1;">
+      <h1>{{ agency.name }}</h1>
+      {% if agency.city %}
+      <p class="agency-location">
+        <i class="fas fa-map-marker-alt"></i> {{ agency.city }}{% if agency.district %} - {{ agency.district }}{% endif %}
+      </p>
+      {% endif %}
+      {% if agency.description %}
+      <p class="agency-desc">{{ agency.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Agency Details Grid -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+
+  <!-- Left Column: About Text & Details -->
+  <div class="animate-fade" style="animation-delay: 0.1s;">
+    <div class="detail-info-card">
+
+      <!-- About Text Section -->
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+          نبذة عن الوكالة
+        </h2>
+        <div style="color: var(--dark-700); line-height: 1.8; font-size: 0.95rem;">
+          {% if agency.about %}
+            {{ agency.about|safe|linebreaks }}
+          {% elif agency.description %}
+            {{ agency.description|safe|linebreaks }}
+          {% else %}
+            <p style="color: var(--gray); font-style: italic;">لا يوجد وصف متوفر لهذه الوكالة.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="border-top: 1px dashed var(--gray-200); margin: 1.5rem 0;"></div>
+
+      <!-- Details Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+
+        {% if agency.office_address %}
+        <div style="background: var(--gray-100); padding: 1rem; border-radius: 12px;">
+          <label style="font-size: 0.8rem; color: var(--gray); font-weight: 600; display: block; margin-bottom: 0.35rem;">
+            <i class="fas fa-map-pin" style="color: var(--primary); margin-left: 0.35rem;"></i> العنوان
+          </label>
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark);">{{ agency.office_address }}</div>
+        </div>
+        {% endif %}
+
+        {% if agency.cr_number %}
+        <div style="background: var(--gray-100); padding: 1rem; border-radius: 12px;">
+          <label style="font-size: 0.8rem; color: var(--gray); font-weight: 600; display: block; margin-bottom: 0.35rem;">
+            <i class="fas fa-certificate" style="color: var(--success); margin-left: 0.35rem;"></i> رقم السجل التجاري
+          </label>
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark); direction: ltr; text-align: right;">{{ agency.cr_number }}</div>
+        </div>
+        {% endif %}
+
+        {% if agency.created_at %}
+        <div style="background: var(--gray-100); padding: 1rem; border-radius: 12px;">
+          <label style="font-size: 0.8rem; color: var(--gray); font-weight: 600; display: block; margin-bottom: 0.35rem;">
+            <i class="fas fa-calendar-alt" style="color: var(--warning); margin-left: 0.35rem;"></i> تاريخ الانضمام
+          </label>
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark);">{{ agency.created_at|date:"Y-m-d" }}</div>
+        </div>
+        {% endif %}
+
+        {% if agency.website %}
+        <div style="background: var(--gray-100); padding: 1rem; border-radius: 12px;">
+          <label style="font-size: 0.8rem; color: var(--gray); font-weight: 600; display: block; margin-bottom: 0.35rem;">
+            <i class="fas fa-globe" style="color: var(--primary); margin-left: 0.35rem;"></i> الموقع الإلكتروني
+          </label>
+          <a href="{{ agency.website }}" target="_blank" rel="noopener" style="font-size: 0.95rem; font-weight: 700; color: var(--primary); text-decoration: none; word-break: break-all; display: flex; align-items: center; gap: 0.35rem; direction: ltr; justify-content: flex-end;">
+            {{ agency.website|truncatechars:30 }}
+            <i class="fas fa-external-link-alt" style="font-size: 0.75rem;"></i>
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- CR File -->
+      {% if agency.cr_file %}
+      <div style="margin-top: 1rem;">
+        <a href="{{ agency.cr_file.url }}" target="_blank" rel="noopener" class="btn btn-secondary" style="font-size: 0.9rem;">
+          <i class="fas fa-file-pdf"></i> عرض ملف السجل التجاري
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- Right Column: Social Links & Actions -->
+  <div class="animate-fade" style="animation-delay: 0.2s;">
+    <div class="detail-info-card" style="height: fit-content;">
+
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-share-alt" style="color: var(--primary);"></i>
+        تواصل مع الوكالة
+      </h3>
+
+      <!-- Social Links -->
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+
+        {% if agency.facebook %}
+        <a href="{{ agency.facebook }}" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #e7f3ff; color: #1877f2; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.3s;">
+          <i class="fab fa-facebook-f" style="font-size: 1.1rem; width: 24px; text-align: center;"></i>
+          فيسبوك
+        </a>
+        {% endif %}
+
+        {% if agency.instagram %}
+        <a href="{{ agency.instagram }}" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, #fce7f3 0%, #fef3c7 100%); color: #c13584; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.3s;">
+          <i class="fab fa-instagram" style="font-size: 1.1rem; width: 24px; text-align: center;"></i>
+          انستقرام
+        </a>
+        {% endif %}
+
+        {% if agency.tiktok %}
+        <a href="{{ agency.tiktok }}" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #f0f0f0; color: #000000; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.3s;">
+          <i class="fab fa-tiktok" style="font-size: 1.1rem; width: 24px; text-align: center;"></i>
+          تيك توك
+        </a>
+        {% endif %}
+
+      </div>
+
+      <!-- Back to Properties Button -->
+      <div style="border-top: 1px dashed var(--gray-200); padding-top: 1.25rem;">
+        <a href="{{ agency.get_absolute_url }}" class="btn btn-primary" style="width: 100%;">
+          <i class="fas fa-building"></i> عقارات الوكالة
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  "name": "{{ agency.name }}",
+  "description": "{{ agency.about|default:agency.description|escapejs|truncatechars:200 }}",
+  "url": "{{ request.build_absolute_uri }}",
+  {% if agency.logo %}"logo": "{{ agency.logo.url }}",{% endif %}
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{ agency.office_address|default:'' }}",
+    "addressLocality": "{{ agency.city|default:'' }}",
+    "addressRegion": "{{ agency.district|default:'' }}",
+    "addressCountry": "SA"
+  }
+  {% if agency.phone %},"telephone": "{{ agency.phone }}"{% endif %}
+}
+</script>
+{% endblock %}
