@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+{% block title %}طلبات الوحدات - RENTPLAY{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper animate-fade">
+  {% include "dashboard/_agency_sidebar.html" with sidebar_active="unit_requests" %}
+  <main class="dashboard-main">
+    <div class="dashboard-topbar"><div style="display:flex;align-items:center;gap:1rem;"><button class="mobile-toggle" onclick="toggleDashboardSidebar()"><i class="fas fa-bars"></i></button><h1 class="dashboard-topbar-title">طلبات الوحدات</h1></div></div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-body">
+        <div class="form-row" style="margin-bottom:1rem;">
+          <form method="get" class="form-group" style="display:flex;gap:0.5rem;">
+            <select name="status" class="form-input" onchange="this.form.submit();">
+              <option value="">كل الحالات</option>
+              <option value="new" {% if status_filter == 'new' %}selected{% endif %}>جديد</option>
+              <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>قيد المتابعة</option>
+              <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>مغلق</option>
+            </select>
+            {% if status_filter %}<a href="{% url 'rentplay:dashboard_unit_requests' %}" class="btn btn-secondary"><i class="fas fa-undo"></i></a>{% endif %}
+          </form>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>الجوال</th>
+                <th>المدينة</th>
+                <th>الحي</th>
+                <th>الغرف</th>
+                <th>الميزانية</th>
+                <th>الحالة</th>
+                <th>تاريخ الإرسال</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for req in page_obj %}
+              <tr>
+                <td><strong>{{ req.name }}</strong></td>
+                <td><a href="tel:{{ req.phone }}">{{ req.phone }}</a></td>
+                <td>{{ req.city_name|default:"-" }}</td>
+                <td>{{ req.district_name|default:"-" }}</td>
+                <td>{{ req.rooms|default:"-" }}</td>
+                <td>{% if req.budget %}{{ req.budget|floatformat:0 }} ريال{% else %}-{% endif %}</td>
+                <td><span class="badge badge-info status-badge" id="status-{{ req.id }}">{{ req.get_status_display }}</span></td>
+                <td>{{ req.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                  <select class="form-input status-select" data-id="{{ req.id }}" style="min-width:120px;font-size:0.85rem;">
+                    {% for val, label in req.Status.choices %}
+                    <option value="{{ val }}" {% if req.status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="9" style="text-align:center;padding:2rem;">لا يوجد طلبات.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination" style="margin-top:1rem;">
+          {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary">السابق</a>{% endif %}
+          <span class="page-info">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary">التالي</a>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll('.status-select').forEach(function(select){
+  select.addEventListener('change', function(){
+    var id = this.getAttribute('data-id');
+    var status = this.value;
+    var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+    var formData = new FormData();
+    formData.append('status', status);
+    fetch('/dashboard/unit-requests/' + id + '/update-status/', {
+      method: 'POST',
+      headers: {'X-CSRFToken': csrf ? csrf.value : ''},
+      body: formData
+    }).then(function(r){return r.json();}).then(function(data){
+      if(data.success){
+        var badge = document.getElementById('status-' + id);
+        if(badge) badge.textContent = data.status;
+      } else {
+        alert('حدث خطأ.');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
