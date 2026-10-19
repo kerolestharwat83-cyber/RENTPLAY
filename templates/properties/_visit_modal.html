@@ -1,0 +1,54 @@
+<div class="modal-overlay" id="visitModalOverlay" onclick="closeVisitModal();"></div>
+<div class="modal-content" id="visitModalContent" onclick="event.stopPropagation();">
+  <div class="modal-header">
+    <h3><i class="fas fa-calendar-check"></i> طلب معاينة</h3>
+    <button class="modal-close" onclick="closeVisitModal();" type="button">&times;</button>
+  </div>
+  <div class="modal-body">
+    <p style="margin-bottom:1rem;color:var(--gray-500);font-size:0.9rem;">
+      <i class="fas fa-home"></i> {{ property.title }} — {{ property.agency.name }}
+    </p>
+    <form id="visitForm" onsubmit="event.stopPropagation(); submitVisitForm(this); return false;" method="post" action="{% url 'rentplay:submit_visit' property.pk %}">
+      {% csrf_token %}
+      <div style="display:none;">{{ visit_form.website }}{{ visit_form.agency }}</div>
+      <div class="form-group">
+        <label class="form-label">الاسم الكامل <span style="color:var(--danger)">*</span></label>
+        {{ visit_form.client_name }}
+        <div class="field-error" id="visit-error-client_name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">رقم الجوال <span style="color:var(--danger)">*</span></label>
+          {{ visit_form.phone }}
+          <div class="field-error" id="visit-error-phone"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني</label>
+          {{ visit_form.email }}
+          <div class="field-error" id="visit-error-email"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">تاريخ المعاينة <span style="color:var(--danger)">*</span></label>
+          {{ visit_form.visit_date }}
+          <div class="field-error" id="visit-error-visit_date"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">وقت المعاينة <span style="color:var(--danger)">*</span></label>
+          {{ visit_form.visit_time }}
+          <div class="field-error" id="visit-error-visit_time"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ملاحظات</label>
+        {{ visit_form.notes }}
+        <div class="field-error" id="visit-error-notes"></div>
+      </div>
+      <div class="field-error" id="visit-error-non_field"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">
+        <i class="fas fa-paper-plane"></i> إرسال طلب المعاينة
+      </button>
+    </form>
+  </div>
+</div>
