@@ -1,0 +1,41 @@
+{% extends 'base/base.html' %}
+{% block title %}الحجوزات - RENTPLAY{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper animate-fade">
+  {% include "dashboard/_agency_sidebar.html" with sidebar_active="bookings" %}
+  <main class="dashboard-main">
+    <div class="dashboard-topbar"><div style="display:flex;align-items:center;gap:1rem;"><button class="mobile-toggle" onclick="toggleDashboardSidebar()"><i class="fas fa-bars"></i></button><h1 class="dashboard-topbar-title">الحجوزات</h1></div><div style="display:flex;gap:0.5rem;"><button onclick="window.print()" class="btn btn-secondary"><i class="fas fa-print"></i> طباعة</button></div></div>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+      <a href="?" class="nav-tab {% if not status_filter %}active{% endif %}">الكل</a>
+      <a href="?status=pending" class="nav-tab {% if status_filter == 'pending' %}active{% endif %}"><i class="fas fa-clock"></i> قيد الانتظار</a>
+      <a href="?status=confirmed" class="nav-tab {% if status_filter == 'confirmed' %}active{% endif %}"><i class="fas fa-check"></i> مؤكد</a>
+      <a href="?status=cancelled" class="nav-tab {% if status_filter == 'cancelled' %}active{% endif %}"><i class="fas fa-times"></i> ملغي</a>
+      <a href="?status=completed" class="nav-tab {% if status_filter == 'completed' %}active{% endif %}"><i class="fas fa-check-double"></i> مكتمل</a>
+    </div>
+    <div class="filters-card" style="margin-bottom:1.5rem;">
+      <form method="get" class="filters-grid">
+        <div class="form-group"><label class="form-label">الحالة</label><select name="status" class="form-input" onchange="this.form.submit()"><option value="">الكل</option><option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>قيد الانتظار</option><option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>مؤكد</option><option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>ملغي</option><option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>مكتمل</option></select></div>
+        <div class="form-group"><label class="form-label">بحث</label><input type="text" name="search" class="form-input" value="{{ search }}" placeholder="الاسم، الجوال..."></div>
+        <div class="form-group" style="display:flex;align-items:flex-end;gap:0.5rem;"><button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i></button><a href="?" class="btn btn-secondary"><i class="fas fa-undo"></i></a></div>
+      </form>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-body" style="padding:0;">
+        {% if page_obj %}<div class="table-wrap"><table class="dashboard-table"><thead><tr><th>#</th><th>العميل</th><th>الجوال</th><th>كود الوحدة</th><th>عنوان الوحدة</th><th>الحي</th><th>تاريخ الدخول</th><th>تاريخ الخروج</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>
+        {% for bk in page_obj %}
+        <tr id="booking-row-{{ bk.pk }}"><td>{{ forloop.counter }}</td><td><strong>{{ bk.client_name }}</strong></td><td>{{ bk.phone }}</td><td><strong>{{ bk.property_unit.unit_code|default:"-" }}</strong></td><td>{{ bk.property_unit.title|truncatechars:30 }}</td><td>{{ bk.property_unit.district.name|default:"-" }}</td><td>{{ bk.start_date|date:"Y-m-d" }}</td><td>{{ bk.end_date|date:"Y-m-d" }}</td><td><span class="badge badge-{{ bk.status_css_class }}" id="status-badge-{{ bk.pk }}">{{ bk.get_status_display }}</span></td><td><div class="action-buttons"><button class="btn btn-sm btn-primary" onclick="toggleBookingDetail({{ bk.pk }})" title="عرض"><i class="fas fa-eye"></i></button>{% if bk.status == 'pending' %}<button class="btn btn-sm btn-success" onclick="updateBookingStatus({{ bk.pk }},'confirmed')" title="تأكيد"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="updateBookingStatus({{ bk.pk }},'cancelled')" title="إلغاء"><i class="fas fa-times"></i></button>{% endif %}</div></td></tr>
+        <tr id="booking-detail-{{ bk.pk }}" style="display:none;background:var(--gray-100);"><td colspan="10" style="padding:1.5rem;"><div class="inquiry-detail-grid"><div class="inquiry-detail-item"><label>البريد الإلكتروني</label><div>{{ bk.email|default:"-" }}</div></div><div class="inquiry-detail-item"><label>المدة</label><div>{{ bk.duration_months }} أشهر</div></div><div class="inquiry-detail-item"><label>الوكالة</label><div>{{ bk.agency.name }}</div></div><div class="inquiry-detail-item"><label>IP</label><div>{{ bk.ip_address|default:"-" }}</div></div></div>{% if bk.internal_notes %}<div style="margin-top:1rem;"><label style="font-weight:700;color:var(--dark-700);">ملاحظات</label><p style="color:var(--gray);margin-top:0.25rem;">{{ bk.internal_notes }}</p></div>{% endif %}</td></tr>
+        {% endfor %}</tbody></table></div>
+        {% if page_obj.has_other_pages %}<div class="pagination" style="padding:1rem;">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="btn btn-sm btn-secondary"><i class="fas fa-chevron-left"></i></a>{% endif %}<span>صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="btn btn-sm btn-secondary"><i class="fas fa-chevron-right"></i></a>{% endif %}</div>{% endif %}
+        {% else %}<div class="empty-state"><i class="fas fa-calendar-check"></i><h3>لم يتم العثور على حجوزات</h3></div>{% endif %}
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>function toggleDashboardSidebar(){var s=document.getElementById('dashboardSidebar'),o=document.getElementById('dashboardOverlay');s.classList.toggle('open');o.classList.toggle('open');}
+function toggleBookingDetail(pk){var row=document.getElementById('booking-detail-'+pk);row.style.display=row.style.display==='none'?'table-row':'none';}
+function updateBookingStatus(pk,status){var fd=new FormData();fd.append('status',status);fd.append('csrfmiddlewaretoken','{{ csrf_token }}');fetch('/dashboard/bookings/'+pk+'/update-status/',{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}}).then(function(r){return r.json();}).then(function(data){if(data.success){showToast(data.message,'success');setTimeout(function(){location.reload();},800);}}).catch(function(){showToast('خطأ','error');});}
+</script>
+{% endblock %}
