@@ -1,0 +1,70 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}إحصائيات الوحدة - {{ property_obj.title }} - RENTPLAY{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1><i class="fas fa-chart-bar"></i> إحصائيات الوحدة</h1>
+  <a href="{% url 'rentplay:dashboard_properties' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-right"></i> العودة للوحدات</a>
+</div>
+
+<div class="stats-bar" style="margin-bottom:1.5rem;">
+  <div class="stat-card">
+    <div class="stat-icon blue"><i class="fas fa-eye"></i></div>
+    <div class="stat-info"><h4>{{ property_obj.view_count }}</h4><span>مشاهدات</span></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange"><i class="fas fa-balance-scale"></i></div>
+    <div class="stat-info"><h4>{{ property_obj.compare_count }}</h4><span>إضافة للمقارنة</span></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fas fa-calendar-check"></i></div>
+    <div class="stat-info"><h4>{{ property_obj.booking_count }}</h4><span>حجوزات</span></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><i class="fas fa-heart"></i></div>
+    <div class="stat-info"><h4>{{ property_obj.wishlist_count }}</h4><span>المفضلة</span></div>
+  </div>
+</div>
+
+<div class="grid-2" style="gap:1.5rem;">
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-calendar-check"></i> آخر الحجوزات</h3></div>
+    <div class="table-container" style="margin:0;">
+      <table class="data-table">
+        <thead><tr><th>العميل</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+        <tbody>
+          {% for b in bookings %}
+          <tr>
+            <td>{{ b.client_name }}<br><small>{{ b.phone }}</small></td>
+            <td>{{ b.start_date|date:"Y-m-d" }}<br><small>إلى {{ b.end_date|date:"Y-m-d" }}</small></td>
+            <td><span class="badge {{ b.status_css_class }}">{{ b.get_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-center" style="padding:1rem;color:var(--gray-500);">لا توجد حجوزات</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-door-open"></i> آخر طلبات المعاينة</h3></div>
+    <div class="table-container" style="margin:0;">
+      <table class="data-table">
+        <thead><tr><th>العميل</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+        <tbody>
+          {% for v in visits %}
+          <tr>
+            <td>{{ v.client_name }}<br><small>{{ v.phone }}</small></td>
+            <td>{{ v.visit_date|date:"Y-m-d" }}<br><small>{{ v.visit_time|time:"H:i" }}</small></td>
+            <td><span class="badge {{ v.status_css_class }}">{{ v.get_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-center" style="padding:1rem;color:var(--gray-500);">لا توجد طلبات معاينة</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

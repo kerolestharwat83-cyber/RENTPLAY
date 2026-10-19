@@ -1,0 +1,55 @@
+{% load static %}
+<div class="modal-overlay" id="bookingModalOverlay" onclick="closeBookingModal();"></div>
+<div class="modal-content" id="bookingModalContent" onclick="event.stopPropagation();">
+  <div class="modal-header">
+    <h3><i class="fas fa-calendar-check"></i> احجز الوحدة</h3>
+    <button type="button" class="modal-close" onclick="closeBookingModal();"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="booking-modal-info" style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;padding:0.75rem;background:var(--gray-50);border-radius:8px;">
+      <img src="{{ property.main_image }}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;" alt="" onerror="this.style.display='none'">
+      <div>
+        <h4 style="margin:0;font-size:1rem;">{{ property.title }}</h4>
+        <span style="color:var(--gray-500);font-size:0.85rem;">{{ property.city|default:"" }}{% if property.district %} - {{ property.district }}{% endif %}</span>
+      </div>
+    </div>
+    <form id="bookingModalForm" method="post" action="{% url 'rentplay:submit_booking' property.id %}" onsubmit="submitBookingModal(event);" onclick="event.stopPropagation();">
+      {% csrf_token %}
+      <input type="hidden" name="agency" value="{{ property.agency.id }}">
+      <input type="hidden" name="website" value="">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">الاسم *</label>
+          <input type="text" name="client_name" class="form-input" placeholder="الاسم الكامل" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الجوال *</label>
+          <input type="text" name="phone" class="form-input" placeholder="05XXXXXXXX" required pattern="05\d{8}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">البريد الإلكتروني</label>
+        <input type="email" name="email" class="form-input" placeholder="your@email.com">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">تاريخ البدء *</label>
+          <input type="date" name="start_date" class="form-input" id="modalStartDate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">تاريخ الانتهاء *</label>
+          <input type="date" name="end_date" class="form-input" id="modalEndDate" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">مدة الإيجار (بالأشهر)</label>
+        <input type="number" name="number_of_months" class="form-input" placeholder="مثال: 6" min="1">
+      </div>
+      <div id="bookingModalErrors" class="alert alert-danger" style="display:none;"></div>
+      <div class="form-actions" style="margin-top:1rem;display:flex;gap:0.5rem;">
+        <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> إرسال الحجز</button>
+        <button type="button" class="btn btn-secondary" onclick="closeBookingModal();">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>

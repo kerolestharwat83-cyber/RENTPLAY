@@ -1,0 +1,73 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}طلبات المعاينة - RENTPLAY{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1><i class="fas fa-calendar-check"></i> طلبات المعاينة</h1>
+</div>
+
+<div class="filters-card" style="margin-bottom:1.5rem;">
+  <form method="get" class="filters-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+    <div class="form-group">
+      <label class="form-label">الحالة</label>
+      <select name="status" class="form-input" onchange="this.form.submit()">
+        <option value="">كل الحالات</option>
+        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>معلق</option>
+        <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>مؤكد</option>
+        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>تمت</option>
+        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>ملغى</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">بحث</label>
+      <input type="text" name="search" class="form-input" placeholder="اسم / تليفون / وحدة" value="{{ search }}">
+    </div>
+    <div class="form-group" style="display:flex;align-items:flex-end;">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> تصفية</button>
+      <a href="{% url 'rentplay:dashboard_visits' %}" class="btn btn-secondary" style="margin-right:0.5rem;"><i class="fas fa-undo"></i></a>
+    </div>
+  </form>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>العميل</th>
+        <th>الوحدة</th>
+        <th>التاريخ</th>
+        <th>الوقت</th>
+        <th>الحالة</th>
+        <th>تاريخ الإرسال</th>
+        <th>إجراءات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for visit in page_obj %}
+      <tr>
+        <td>{{ visit.pk }}</td>
+        <td><strong>{{ visit.client_name }}</strong><br><small style="color:var(--gray-500);">{{ visit.phone }}</small></td>
+        <td><a href="{{ visit.property_unit.get_absolute_url }}" target="_blank">{{ visit.property_unit.title }}</a></td>
+        <td>{{ visit.visit_date|date:"Y-m-d" }}</td>
+        <td>{{ visit.visit_time|time:"H:i" }}</td>
+        <td><span class="badge {{ visit.status_css_class }}">{{ visit.get_status_display }}</span></td>
+        <td>{{ visit.created_at|date:"Y-m-d H:i" }}</td>
+        <td>
+          <form method="post" action="{% url 'rentplay:visit_update_status' visit.pk %}" style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+            {% csrf_token %}
+            <button type="submit" name="status" value="confirmed" class="btn btn-success btn-sm" {% if visit.status == 'confirmed' %}disabled{% endif %}>تأكيد</button>
+            <button type="submit" name="status" value="completed" class="btn btn-info btn-sm" {% if visit.status == 'completed' %}disabled{% endif %}>تم</button>
+            <button type="submit" name="status" value="cancelled" class="btn btn-danger btn-sm" {% if visit.status == 'cancelled' %}disabled{% endif %}>إلغاء</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-center" style="padding:2rem;color:var(--gray-500);"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i> لا توجد طلبات معاينة</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include 'base/_pagination.html' with page_obj=page_obj %}
+{% endblock %}
