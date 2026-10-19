@@ -27,7 +27,7 @@ from .models import (
     User, Agency, Property, PropertyVideo, PropertyType, City, District, Booking,
     Review, Wishlist, Message, Notification, Waitlist, Contract, Banner,
     PropertyPanorama, PropertyAvailability, HouseRule, PropertyReport, AboutPage,
-    Customer, UnitRequest
+    Customer, UnitRequest, VisitRequest
 )
 from .forms import (
     LoginForm, UserRegistrationForm, PropertyForm, BookingForm,
